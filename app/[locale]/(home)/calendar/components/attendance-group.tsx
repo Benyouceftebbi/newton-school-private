@@ -37,7 +37,7 @@ import { addPaymentTransaction } from "@/lib/hooks/billing/student-billing";
 import { addPayment } from "@/lib/hooks/billing/otherPayments";
 import { format } from "date-fns";
 import { db } from "@/firebase/firebase-config";
-
+import generatePDF from './teacherReview'
 
 
 
@@ -391,6 +391,7 @@ const addStudent= async (student,classId,attendanceId) => {
       console.error('Error removing class:', error);
     }
   };
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
@@ -401,12 +402,14 @@ const addStudent= async (student,classId,attendanceId) => {
             <p className="text-muted-foreground">{selectedEvent.subject}</p>
           </div>
         </div>
-        {/* <Input
-          placeholder="Search Student..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          className="max-w-sm"
-        /> */}
+              <div>
+                
+              </div>
+        <Button variant="outline" className="ml-2"  
+        
+        onClick={() => generatePDF(selectedEvent, attendance)}>
+           {t('export')}
+          </Button> 
         <div className="text-muted-foreground">
         {selectedEvent.extra && (<Button variant="destructive" className="ml-2" onClick={() => removeExtraClass(selectedEvent)}>Retirer la classe</Button>)} 
         </div>

@@ -86,7 +86,7 @@ function SignIn() {
                 </Link>
               </div>
               <FormControl>
-                <Input placeholder="password" {...field} />
+                <Input placeholder="password" {...field} type="password"/>
               </FormControl>
           
               <FormMessage />
