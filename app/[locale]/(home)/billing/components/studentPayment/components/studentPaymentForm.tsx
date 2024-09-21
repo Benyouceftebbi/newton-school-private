@@ -310,7 +310,7 @@ const onSelected = (selectedStudent: any) => {
                 ...clsUID,
                 amountPerSession: clsUID.amount / clsUID.sessionsToStudy,
                 nextPaymentDate: selectedClass.nextPaymentDate,
-                amountPaid:0
+                
               };
             }
         
