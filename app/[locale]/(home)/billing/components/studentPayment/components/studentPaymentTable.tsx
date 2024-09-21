@@ -1,4 +1,5 @@
-
+"use client"
+import { format } from "date-fns";
 
 import * as React from "react"
 import {
@@ -19,13 +20,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-  } from "@/components/ui/card"
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -52,56 +53,40 @@ import SheetDemo from "@/app/[locale]/(home)/students/components/editStudent"
 import { useTranslations } from "next-intl"
 import { exportTableToExcel } from "@/components/excelExport"
 
-  export const StudentPaymentTable= () => {
-    const {students}=useData()
-    const [open,setOpen]=React.useState(false)
-    const [student,setStudent]=React.useState<any>({  
-      id: '123456',
-      level: 'Intermediate',
-      year: '2024',
-      firstName: 'John',
-      lastName: 'Doe',
-      dateOfBirth: new Date('1990-01-01'),
-      gender: 'male',
-      address: '123 Main St',
-      city: 'Anytown',
-      state: 'State',
-      postalCode: '12345',
-      country: 'Country',
-      parentFullName: 'Jane Doe',
-      parentFirstName: 'Jane',
-      parentLastName: 'Doe',
-      parentEmail: 'jane.doe@example.com',
-      parentPhone: '123-456-7890',
-      parentId: '654321',
-      emergencyContactName: 'Emergency Contact',
-      emergencyContactPhone: '987-654-3210',
-      medicalConditions: null,
-      status: 'Active',
-      joiningDate: new Date(),
-      registrationStatus: 'Registered',
-      startDate: new Date(),
-      lastPaymentDate: new Date(),
-      nextPaymentDate: new Date(),
-      totalAmount: 1000,
-      monthlypayment: 500,
-      class: { name: 'Class Name', id: 'class123' },
+export const StudentPaymentTable = () => {
+  const { students, classes } = useData()
+  console.log('ddd',classes);
+  
+  const [open, setOpen] = React.useState(false)
+  const [selectedStudent, setSelectedStudent] = React.useState<any>(null)
+  const t = useTranslations()
+
+  const openEditSheet = (student: any) => {
+    setSelectedStudent(student)
+    setOpen(true)
+  }
+
+  const getStudentClasses = (studentId: string) => {
+    return classes.filter(cls => 
+      cls.students.some(s => s.id === studentId)
+    ).map(cls => {
+      const studentInClass = cls.students.find(s => s.id === studentId)
+      return {
+        className: cls.name,
+        group: studentInClass?.group || '',
+        debt: studentInClass?.debt || 0,
+        amount: studentInClass?.amount || 0,
+        nextPaymentDate: studentInClass?.nextPaymentDate || null,
+      }
     })
-    const t=useTranslations()
-    const openEditSheet = (student:any) => {
-      setStudent(student)
-      setOpen(true); // Open the sheet after setting the level
-    };
-    
-   const columns: ColumnDef<any>[] = [
+  }
+
+  const columns: ColumnDef<any>[] = [
     {
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
         />
@@ -118,83 +103,49 @@ import { exportTableToExcel } from "@/components/excelExport"
     },
     {
       accessorKey: "name",
-      header:() => <div>{t('Name')}</div>, 
-
-      cell: ({ row }) => (
-        <div className="capitalize">
-           <div className="font-medium">{row.getValue("name")}</div>
-
-        </div>
-      ),
+      header: () => <div>{t('Student Name')}</div>,
+      cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
     },
     {
       accessorKey: "year",
-      header:() => <div>{t('level')}</div>, 
-
-      cell: ({ row }) => <div className="lowercase hidden sm:table-cell">{row.getValue("year")}</div>,
+      header: () => <div>{t('Year')}</div>,
+      cell: ({ row }) => <div className="capitalize">{row.getValue("year")}</div>,
     },
-{
-  accessorKey: "nextPaymentDate",
-  header: () => <div>{t('nextPaymentDate')}</div>,
-  cell: ({ row }) => {
-    const value = row.getValue("nextPaymentDate");
-    const date = value ? new Date(value) : null;
-    
-    return (
-      <div className="capitalize hidden sm:table-cell">
-        {date instanceof Date && !isNaN(date.getTime())
-          ? date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-          : "N/A"} {/* Fallback if the date is invalid */}
-      </div>
-    );
-  },
-},
-    
     {
-        accessorKey: "phoneNumber",
-        header:() => <div>{t('phone-number')}</div>, 
-        cell: ({ row }) => (
-          <div className="capitalize hidden sm:table-cell">{row.getValue("phoneNumber")}</div>
-        ),
-      },
-    {
-      accessorKey: "monthlypayment",
-      header: () => <div className="text-right">{t('monthly-payment')}</div>,
+      accessorKey: "classes",
+      header: () => <div>{t('Classes')}</div>,
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("monthlypayment"))
-  
-        // Format the amount as a dollar amount
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "DZD",
-        }).format(amount)
-  
-        return <div className="text-right font-medium">{formatted}</div>
+        const studentClasses = row.getValue("classes") as any[]
+        return (
+          <div>
+            {studentClasses.map((cls, index) => (
+              <div key={index} className="mb-2">
+                <div>({cls.group})</div>
+                <div>{t('Amount')}: {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "DZD",
+                }).format(cls.amount)}</div>
+                {cls.debt > 0 && <div>{t('Debt')}: {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "DZD",
+                }).format(cls.debt)}</div>}
+              <div >{t('next-payment-date')}:
+  {cls.nextPaymentDate instanceof Date && !isNaN(cls.nextPaymentDate.getTime())
+    ? cls.nextPaymentDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    : "N/A"} {/* Fallback if the date is invalid */}
+</div>
+
+              </div>
+            ))}
+          </div>
+        )
       },
     },
-    {
-        accessorKey: "debt",
-        header: () => <div className="text-right">{t('debt')}</div>,
-        cell: ({ row }) => {
-          const amount = parseFloat(row.getValue("debt"))
-    
-          // Format the amount as a dollar amount
-          const formatted = new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "DZD",
-          }).format(amount)
-    
-          return <div className="text-right font-medium">{formatted}</div>
-        },
-      },
-      
-  
     {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
         const student = row.original
-  
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -205,44 +156,32 @@ import { exportTableToExcel } from "@/components/excelExport"
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
-             
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={()=>openEditSheet(student)}>
-                {t('view-student')} </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openEditSheet(student)}>
+                {t('view-student')}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )
       },
     },
   ]
-  const handleExport = () => {
-    const exceldata=students.map((student:any)=>({[`${t('Name')}`]:student.student,
-    [`${t('level')}`]:student.level,
-   
-    [`${t('next-payment-date-0')}`]:student.nextPaymentDate,
-    [`${t('parent-phone-0')}`]:student.parentPhone,
-    [`${t('amount-left')}`]: new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "DZD",
-    }).format(student.monthlypayment),
-    [`${t('total-amount-0')}`]: new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "DZD",
-    }).format(student.totalAmount),
-    }))
-    exportTableToExcel(t('students-payments-table'),exceldata);
-  };
+
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
+  const tableData = React.useMemo(() => {
+    return students.map(student => ({
+      ...student,
+      classes: getStudentClasses(student.id),
+    }))
+  }, [students, classes])
+
   const table = useReactTable({
-    data:students,
-   columns,
+    data: tableData,
+    columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -259,145 +198,157 @@ import { exportTableToExcel } from "@/components/excelExport"
     },
     initialState: {
       pagination: {
-        pageIndex: 0, //custom initial page index
-        pageSize: 3, //custom default page size
+        pageIndex: 0,
+        pageSize: 5,
       },
     },
   })
- 
 
-  
+  const handleExport = () => {
+    const exceldata = tableData.map((student: any) => ({
+      [`${t('Student Name')}`]: student.name,
+      [`${t('Year')}`]: student.year,
+      [`${t('Classes')}`]: student.classes.map((cls: any) => 
+        `${cls.className} (${cls.group}) - ${t('Amount')}: ${new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "DZD",
+        }).format(cls.amount)}${cls.debt > 0 ? ` ${t('Debt')}: ${new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "DZD",
+        }).format(cls.debt)}` : ''} ${t('Next Payment')}: ${cls.nextPaymentDate ? new Date(cls.nextPaymentDate).toLocaleDateString() : t('Not set')}`
+      ).join(', '),
+    }))
+    exportTableToExcel(t('students-payments-table'), exceldata)
+  }
+
   return (
-    <>
-
-  
-    <Card x-chunk="dashboard-05-chunk-3">
-    <CardHeader className="px-7">
-      <CardTitle>{t('your-student-payments')}</CardTitle>
-      <CardDescription>
-      {t('introducing-our-dynamic-expences-dashboard')} </CardDescription>
-    </CardHeader>
-    <CardContent>     
-    <div className="w-full">
-    <div className="flex items-center justify-between">
-       
-
-       <Input
-             placeholder={t('filter-by-student')}
-             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-             onChange={(event) =>
-               table.getColumn("name")?.setFilterValue(event.target.value)
-             }
-             className="max-w-sm"
-           />
-             <div className="flex items-center ml-auto">
-       <DropdownMenu>
-             <DropdownMenuTrigger asChild>
-               <Button variant="outline" className="ml-auto">
-                 {t('columns')} <ChevronDownIcon className="ml-2 h-4 w-4" />
-               </Button>
-             </DropdownMenuTrigger>
-             <DropdownMenuContent align="end">
-               {table
-                 .getAllColumns()
-                 .filter((column) => column.getCanHide())
-                 .map((column) => {
-                   return (
-                     <DropdownMenuCheckboxItem
-                       key={column.id}
-                       className="capitalize"
-                       checked={column.getIsVisible()}
-                       onCheckedChange={(value) =>
-                         column.toggleVisibility(!!value)
-                       }
-                     >
-                       {column.id}
-                     </DropdownMenuCheckboxItem>
-                   )
-                 })}
-             </DropdownMenuContent>
-           </DropdownMenu>
-           <Button variant="outline" className="ml-2" onClick={handleExport}>
-          {t('export')} <File className="ml-2 h-4 w-4" />
-         </Button>
-       </div>
-       </div>
-      <div className="rounded-md border mt-5">
-        <Table id="students-payments-table">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
+    <Card>
+      <CardHeader className="px-7">
+        <CardTitle>{t('your-student-payments')}</CardTitle>
+        <CardDescription>
+          {t('introducing-our-dynamic-expenses-dashboard')}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="w-full">
+          <div className="flex items-center justify-between">
+            <Input
+              placeholder={t('filter-by-student')}
+              value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+              onChange={(event) =>
+                table.getColumn("name")?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+            <div className="flex items-center ml-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="ml-auto">
+                    {t('columns')} <ChevronDownIcon className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={column.id}
+                          className="capitalize"
+                          checked={column.getIsVisible()}
+                          onCheckedChange={(value) =>
+                            column.toggleVisibility(!!value)
+                          }
+                        >
+                          {column.id}
+                        </DropdownMenuCheckboxItem>
+                      )
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="outline" className="ml-2" onClick={handleExport}>
+                {t('export')} <File className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="rounded-md border mt-5">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      )
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
                           )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      {t('no-results')}
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  {t('no-results')} </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} {t('row-s-selected')}
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex items-center justify-end space-x-2 py-4">
+            <div className="flex-1 text-sm text-muted-foreground">
+              {table.getFilteredSelectedRowModel().rows.length} of{" "}
+              {table.getFilteredRowModel().rows.length} {t('row-s-selected')}
+            </div>
+            <div className="space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                {t('previous')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                {t('next')}
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {t('previous')} </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {t('next')} </Button>
-        </div>
-      </div>
-    </div>
-    <SheetDemo open={open} setOpen={setOpen}  student={student}/>
-
-    </CardContent>
-  </Card>
-  </>
+      </CardContent>
+      <SheetDemo open={open} setOpen={setOpen} student={selectedStudent} />
+    </Card>
   )
 }
