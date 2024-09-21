@@ -133,13 +133,22 @@ import { exportTableToExcel } from "@/components/excelExport"
 
       cell: ({ row }) => <div className="lowercase hidden sm:table-cell">{row.getValue("year")}</div>,
     },
-    {
-      accessorKey: "nextPaymentDate",
-      header:() => <div>{t('nextPaymentDate')}</div>, 
-      cell: ({ row }) => (
-        <div className="capitalize hidden sm:table-cell"> {((row.getValue("nextPaymentDate") as Date)).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
-      ),
-    },
+{
+  accessorKey: "nextPaymentDate",
+  header: () => <div>{t('nextPaymentDate')}</div>,
+  cell: ({ row }) => {
+    const value = row.getValue("nextPaymentDate");
+    const date = value ? new Date(value) : null;
+    
+    return (
+      <div className="capitalize hidden sm:table-cell">
+        {date instanceof Date && !isNaN(date.getTime())
+          ? date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+          : "N/A"} {/* Fallback if the date is invalid */}
+      </div>
+    );
+  },
+},
     
     {
         accessorKey: "phoneNumber",

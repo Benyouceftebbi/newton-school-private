@@ -1196,7 +1196,7 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset, cal
           <div class="header">
             <div class="logo-container">
               <img src="${profile.photo}" alt="School Logo" />
-              <h2>Smart School</h2>
+              <h2>${profile.schoolName}</h2>
             </div>
           </div>
           <div class="bill-item">

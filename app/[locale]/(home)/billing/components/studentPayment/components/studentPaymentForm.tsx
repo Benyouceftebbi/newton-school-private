@@ -310,6 +310,7 @@ const onSelected = (selectedStudent: any) => {
                 ...clsUID,
                 amountPerSession: clsUID.amount / clsUID.sessionsToStudy,
                 nextPaymentDate: selectedClass.nextPaymentDate,
+                amountPaid:0
               };
             }
         
@@ -584,6 +585,7 @@ const billHtml = `
           printWindow.print();
         };
       }
+      reset({paymentDate:new Date(),filtredclasses:[]})
     } catch (error) {
       console.error('Error processing transaction:', error);
 
@@ -591,7 +593,7 @@ const billHtml = `
   }
   
 
-console.log(filtredclasses);
+
 
   return (
     <Card className="overflow-hidden" x-chunk="dashboard-05-chunk-4">
