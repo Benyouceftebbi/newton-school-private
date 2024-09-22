@@ -55,7 +55,6 @@ import { exportTableToExcel } from "@/components/excelExport"
 
 export const StudentPaymentTable = () => {
   const { students, classes } = useData()
-  console.log('ddd',classes);
   
   const [open, setOpen] = React.useState(false)
   const [selectedStudent, setSelectedStudent] = React.useState<any>(null)
@@ -76,7 +75,7 @@ export const StudentPaymentTable = () => {
         group: studentInClass?.group || '',
         debt: studentInClass?.debt || 0,
         amount: studentInClass?.amount || 0,
-        nextPaymentDate: studentInClass?.nextPaymentDate || null,
+        nextPaymentDate:studentInClass?.nextPaymentDate || new Date(),
       }
     })
   }
@@ -116,6 +115,8 @@ export const StudentPaymentTable = () => {
       header: () => <div>{t('Classes')}</div>,
       cell: ({ row }) => {
         const studentClasses = row.getValue("classes") as any[]
+        console.log("stdddd",studentClasses);
+        
         return (
           <div>
             {studentClasses.map((cls, index) => (
@@ -131,7 +132,7 @@ export const StudentPaymentTable = () => {
                 }).format(cls.debt)}</div>}
               <div >{t('next-payment-date')}:
   {cls.nextPaymentDate instanceof Date && !isNaN(cls.nextPaymentDate.getTime())
-    ? cls.nextPaymentDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    ? new Date(cls.nextPaymentDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
     : "N/A"} {/* Fallback if the date is invalid */}
 </div>
 
@@ -165,13 +166,12 @@ export const StudentPaymentTable = () => {
         )
       },
     },
-  ]
+]
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-
   const tableData = React.useMemo(() => {
     return students.map(student => ({
       ...student,
