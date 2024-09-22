@@ -66,7 +66,7 @@ export const StudentSchema = z.object({
   nextPaymentDate: z.date().optional(),
   phoneNumber: z.string().min(10, 'Please enter a value between 10 and 15 characters.').max(15, 'Please enter a value between 10 and 15 characters.'),
   photo: z.string().optional(),
-  registrationAndInsuranceFee: z.string().optional(),
+  registrationAndInsuranceFee: z.number().optional(),
   school: z.string().min(1, { message: 'School is required' }),
   student:z.string().optional(),
   studentIndex: z.number( { message: 'Name is required' }),
