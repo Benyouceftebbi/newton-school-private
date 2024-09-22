@@ -1067,7 +1067,7 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset, cal
         monthlypayment: calculatedAmount,
         lastPaymentDate: Timestamp.fromDate(currentDate),
         nextPaymentDate: Timestamp.fromDate(new Date(new Date().setMonth(new Date().getMonth() + 1))),
-        registrationAndInsuranceFee: 'notPaid',
+        registrationAndInsuranceFee: profile.RegistrationFee,
         totalAmount: calculatedAmount,
         value: data.name,
         label: data.name,
