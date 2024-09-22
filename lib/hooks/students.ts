@@ -148,7 +148,10 @@ export async function uploadAndLinkToCollection(
                 nextPaymentDate: student.nextPaymentDate,
 
             },
-            transaction:[]
+            transaction:[{
+              paymentDate:student.lastPaymentDate,
+              amount:student.registrationAndInsuranceFee
+            }]
             });
 
             await logAction(user.uid, role, 'Students', student.id, 'add new student', { studentName: student.name });
