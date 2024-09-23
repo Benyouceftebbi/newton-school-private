@@ -239,24 +239,25 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
   const [schoolType, setSchoolType] = React.useState('');
 
   React.useEffect(() => {
-    const year = watch('year');
-  
-    if (middleSchoolYears.includes(year)) {
+    const year = teacher.year;
+
+
+    if (JSON.stringify(middleSchoolYears) === JSON.stringify(year)) {
       setSchoolType('متوسط');
-    } else if (highSchoolYears.includes(year)) {
+    } else if (JSON.stringify(highSchoolYears) === JSON.stringify(year)) {
       setSchoolType('high');
-    } else if (universitySchoolYears.includes(year)) {
+    } else if (JSON.stringify(universitySchoolYears) === JSON.stringify(year)) {
       setSchoolType('جامعي');
-    } else if (priarySchoolYears.includes(year)) {
+    } else if (JSON.stringify(priarySchoolYears) === JSON.stringify(year)) {
       setSchoolType('ابتدائي');
-    } else if (languageSchoolYears.includes(year)) {
+    } else if (JSON.stringify(languageSchoolYears) === JSON.stringify(year)) {
       setSchoolType('لغات');
-    } else if (year === "تحضيري") {
+    } else if (JSON.stringify(["تحضيري"]) === JSON.stringify(year)) {
       setSchoolType('تحضيري');
     } else {
       setSchoolType(''); // Default to empty or any other value you prefer
     }
-  }, [watch('year'), middleSchoolYears, highSchoolYears, universitySchoolYears, priarySchoolYears, languageSchoolYears]);
+  }, [middleSchoolYears, highSchoolYears, universitySchoolYears, priarySchoolYears, languageSchoolYears,teacher]);
   
 const handleSchoolTypeChange = (type) => {
   setSchoolType(type);
@@ -283,6 +284,7 @@ else if (type === "لغات") {
     setValue('year', years);
   }
 };
+
 
 
 

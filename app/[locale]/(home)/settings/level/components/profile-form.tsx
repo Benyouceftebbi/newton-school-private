@@ -28,6 +28,7 @@ import { LoadingButton } from "@/components/ui/loadingButton";
 import OpenDaysTable from "../../components/open-days-table";
 import { useTranslations } from "next-intl";
 import { Upload } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
@@ -35,7 +36,12 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 
 export function ProfileForm() {
+  const languages = [
  
+    { code: "ar", name: "Arabe" },
+    { code: "fr", name: "Francais" },
+   
+  ]
 const [filesToUpload, setFilesToUpload] = React.useState<FileUploadProgress[]>([]);
 const t=useTranslations()
   const form = useForm<any>({
@@ -370,7 +376,35 @@ const handleFileUpload = (event) => {
         </div>
       </>
       )}
+<div className="space-y-4">
+<FormField
+             
+                  control={form.control}
+                  name={"ticketLanguage"}
+                  render={({ field }) => (
+                    <FormItem style={{ marginBottom: 15 }}>
+                      <FormLabel>{t('ticket-language')}</FormLabel>
+                      <FormControl>
+                      <Select {...field} value={field.value} onValueChange={field.onChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose a language" />
+            </SelectTrigger>
+            <SelectContent>
+              {languages.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code}>
+                  {t(lang.name)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+                      </FormControl>
 
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+          
+        </div>
         {/* URL fields */}
         <div>
           {fields.map((field, index) => (

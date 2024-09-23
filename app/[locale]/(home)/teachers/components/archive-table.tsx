@@ -22,6 +22,7 @@ import { addDays, endOfMonth, format, startOfMonth } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addStudentFromAttendance, removeStudentFromAttendance } from "@/lib/hooks/calendar";
 import { addPaymentTransaction } from "@/lib/hooks/billing/student-billing";
+import generatePDF from './teacherReview'
 
 
 export type studentAttandance = {
@@ -466,7 +467,7 @@ export const ArchiveDataTable = ({teacher}) => {
           }
           className="max-w-sm "
         /> */}
-          <Button variant="outline" className="flex items-center gap-2 hover:bg-muted/50 transition-colors">
+          <Button variant="outline" className="flex items-center gap-2 hover:bg-muted/50 transition-colors" onClick={()=>generatePDF({teacher:teacher.name,group:'',subject:'',year:''},filteredData,dates)}>
             <DownloadIcon className="w-5 h-5" />
             Export
           </Button>

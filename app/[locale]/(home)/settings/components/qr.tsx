@@ -13,7 +13,7 @@ import { PDFDocument, PDFName, PDFPage, rgb } from 'pdf-lib';
 import { saveAs } from "file-saver"; // Import saveAs from file-saver
 import path from 'path';
 import { decode } from 'base64-arraybuffer';
-import { addDoc, collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore"
+import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore"
 import { db } from "@/firebase/firebase-config"
 const copyPage = (originalPage) => {
   const cloneNode = originalPage.node.clone();
@@ -154,11 +154,11 @@ export const Component = ()   => {
     const handleDownload = async () => {
       try {
         // Step 1: Generate Unique IDs
-        const uniqueIds = await generateUniqueIds(200);
+        const uniqueIds = await generateUniqueIds(50);
     
         // Step 2: Save to Firestore
-        await setDoc(doc(db, 'Qrs',"kahdidjaidrak200cartes"), {
-          qrs: uniqueIds
+        await updateDoc(doc(db, 'Qrs',"almawaridis30cartes"), {
+          qrs:arrayUnion(...uniqueIds) 
         });
     
         // Step 3: Output the IDs to a JSON file
