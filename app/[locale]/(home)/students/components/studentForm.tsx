@@ -1139,27 +1139,28 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset, cal
   
   // Function to print bill
   const printBill = (studentName: string, fee: number) => {
-    const billHtml = `
-      <html>
-      <head>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            width: 21cm;
-            height: 29.7cm;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-          .bill-container {
-            padding: 10px;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-          }
-          .header {
+    const billHtml = profile.ticketLanguage === 'ar' ? `
+    <html>
+    <head>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          width: 21cm;
+          height: 29.7cm;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .bill-container {
+          width: 8cm;
+          height: 21cm;
+          box-sizing: border-box;
+          padding: 10px;
+          border: 1px solid black; /* Optional: to visually see the ticket's border */
+        }
+         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1167,55 +1168,130 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset, cal
           }
           .logo-container img {
             border-radius: 50%;
-            width: 120px;
-            height: 120px;
+            width: 60px;
+            height: 62px;
             object-fit: cover;
           }
-          h2 {
-            font-size: 48px;
-            font-weight: 700;
-          }
-          .bill-item {
-            margin-bottom: 32px;
-            font-size: 36px;
-          }
-          .total {
-            font-size: 60px;
-            font-weight: 700;
-          }
-          .footer {
-            margin-top: 64px;
-            text-align: center;
-            font-size: 36px;
-            color: #6c757d;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="bill-container">
-          <div class="header">
-            <div class="logo-container">
-              <img src="${profile.photo}" alt="School Logo" />
-              <h2>${profile.schoolName}</h2>
-            </div>
+        h2 {
+          font-size: 24px;
+          font-weight: 700;
+        }
+        .bill-item {
+          margin-bottom: 16px;
+          font-size: 18px;
+        }
+        .total {
+          font-size: 30px;
+          font-weight: 700;
+        }
+        .footer {
+          margin-top: 32px;
+          text-align: center;
+          font-size: 18px;
+          color: #6c757d;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="bill-container">
+        <div class="header">
+          <div class="logo-container">
+            <img src="${profile.photo}" alt="شعار المدرسة" />
+            <h2>${profile.schoolName}</h2>
           </div>
-          <div class="bill-item">
-            <label>Nom:</label> <span>${studentName}</span>
-          </div>
-          <div class="bill-item">
-            <label>Frais d'inscription:</label> <span>DZD ${fee}</span>
-          </div>
-          <hr style="margin: 48px 0;" />
-          <div style="display: flex; justify-content: space-between;">
-            <span class="total">Total:</span>
-            <span class="total">DZD ${fee}</span>
-          </div>
-          <div class="footer">Merci!</div>
         </div>
-      </body>
-      </html>
-    `;
-  
+        <div class="bill-item">
+          <label>الاسم:</label> <span>${studentName}</span>
+        </div>
+        <div class="bill-item">
+          <label>رسوم التسجيل:</label> <span>DZD ${fee}</span>
+        </div>
+        <hr style="margin: 24px 0;" />
+        <div style="display: flex; justify-content: space-between;">
+          <span class="total">الإجمالي:</span>
+          <span class="total">DZD ${fee}</span>
+        </div>
+        <div class="footer">شكراً!</div>
+      </div>
+    </body>
+    </html>
+  ` : `
+    <html>
+    <head>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          width: 21cm;
+          height: 29.7cm;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .bill-container {
+          width: 8cm;
+          height: 21cm;
+          box-sizing: border-box;
+          padding: 10px;
+          border: 1px solid black; /* Optional: to visually see the ticket's border */
+        }
+        .header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 48px;
+        }
+        .logo-container img {
+          border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+        }
+        h2 {
+          font-size: 24px;
+          font-weight: 700;
+        }
+        .bill-item {
+          margin-bottom: 16px;
+          font-size: 18px;
+        }
+        .total {
+          font-size: 30px;
+          font-weight: 700;
+        }
+        .footer {
+          margin-top: 32px;
+          text-align: center;
+          font-size: 18px;
+          color: #6c757d;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="bill-container">
+        <div class="header">
+          <div class="logo-container">
+            <img src="${profile.photo}" alt="School Logo" />
+            <h2>${profile.schoolName}</h2>
+          </div>
+        </div>
+        <div class="bill-item">
+          <label>Nom:</label> <span>${studentName}</span>
+        </div>
+        <div class="bill-item">
+          <label>Frais d'inscription:</label> <span>DZD ${fee}</span>
+        </div>
+        <hr style="margin: 24px 0;" />
+        <div style="display: flex; justify-content: space-between;">
+          <span class="total">Total:</span>
+          <span class="total">DZD ${fee}</span>
+        </div>
+        <div class="footer">Merci!</div>
+      </div>
+    </body>
+    </html>
+  `;
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(billHtml);
@@ -1240,7 +1316,7 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset, cal
             <div className="grid gap-1 text-center">
               <div className="text-xl font-semibold">{formData.name}</div>
               <div className="text-muted-foreground">{formData.year}</div>
-              {/* <div className="text-sm text-muted-foreground">Born: {format(formData?.birthdate, 'MMMM d, yyyy')}</div> */}
+              {/* <div className="text-sm text-muted-foreground">Born: {format(formData?.birthdate, 'MMMM d, yyyy')}</div>*/}
               <div className="text-sm text-muted-foreground">School: {formData.school}</div>
             </div>
           </div>

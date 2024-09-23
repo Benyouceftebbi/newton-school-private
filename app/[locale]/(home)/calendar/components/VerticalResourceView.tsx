@@ -21,10 +21,11 @@ import {
   MbscResource,
   setOptions,
   locale,
+  Popup,
 } from '@mobiscroll/react';
 import { FC} from 'react';
 import './style.css'
-import { format, set, startOfWeek } from 'date-fns';
+import { format, formatDate, set, startOfWeek } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -185,7 +186,8 @@ const VerticalResourceView = () => {
   }, [classes]);
   const handleEventClick =(args) => {
     try {
-
+ 
+      
    
       if (!args || !args.event || !args.event.start || !args.event.extraInfo) {
         throw new Error('Invalid event data provided');
@@ -422,6 +424,72 @@ const VerticalResourceView = () => {
     "Informatique"
   
   ];
+  const [appointment, setAppointment] = useState();
+  const [isTooltipOpen, setTooltipOpen] = useState(false);
+
+  const [tooltipAnchor, setTooltipAnchor] = useState(null);
+
+  const timer = useRef(null);
+
+  const openTooltip = useCallback((args) => {
+    console.log("arge",args);
+    
+    const event = args.event;
+
+
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+
+   
+    setAppointment(event);
+    setTooltipAnchor(args.domEvent.target.closest('.mbsc-schedule-event'));
+    setTooltipOpen(true);
+  }, []);
+
+
+
+
+
+  const handleEventHoverIn = useCallback(
+    (args) => {
+      openTooltip(args);
+    },
+    [openTooltip],
+  );
+
+  const handleEventHoverOut = useCallback(() => {
+    if (!timer.current) {
+      timer.current = setTimeout(() => {
+        setTooltipOpen(false);
+      }, 200);
+    }
+  }, []);
+
+  const handleMouseEnter = useCallback(() => {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    timer.current = setTimeout(() => {
+      setTooltipOpen(false);
+    }, 200);
+  }, []);
+
+  const handleTooltipClose = useCallback(() => {
+    setTooltipOpen(false);
+  }, []);
+
+
+
+
+
+
+
   return (
     <div>
  <Eventcalendar
@@ -436,7 +504,37 @@ const VerticalResourceView = () => {
       groupBy='date'
       locale={locale['fr']}
 defaultSelectedDate={format(defaultSelectedDate, 'yyyy-MM-dd')}
+onEventHoverIn={handleEventHoverIn}
+onEventHoverOut={handleEventHoverOut}
     />
+  <Popup
+        anchor={tooltipAnchor}
+        contentPadding={false}
+        display="anchored"
+        isOpen={isTooltipOpen}
+        scrollLock={false}
+        showOverlay={false}
+        touchUi={false}
+        width={350}
+        onClose={handleTooltipClose}
+
+      >
+       {appointment &&( <div className="bg-popover text-popover-foreground rounded-lg shadow-lg overflow-hidden" 
+           onMouseEnter={handleMouseEnter} 
+           onMouseLeave={handleMouseLeave}>
+        <div className="p-4 space-y-2">
+          <h3 className="font-semibold text-lg">{appointment.title}</h3>
+          <p className="text-sm">
+            {/* Format date in French */}
+            {format(appointment.start, "PPP", { locale: fr })} {format(appointment.start, "p", { locale: fr })} - {format(appointment.end, "p", { locale: fr })}
+          </p>
+          <p className="text-sm">Professeur: {appointment.extraInfo.teacher}</p>
+          <p className="text-sm">Classe/Année: {appointment.extraInfo.year}</p>
+          {appointment.group && <p className="text-sm">Groupe: {appointment.group}</p>}
+          {appointment.resource && <p className="text-sm">Lieu: Salle {appointment.resource}</p>}
+        </div>
+      </div>)}
+      </Popup>
 <Dialog open={open} onOpenChange={(e)=>{setOpen(e);setEvents([...events])}}>
         <DialogContent>
           <DialogHeader>

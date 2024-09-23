@@ -589,5 +589,6 @@
   "next-payment-day": "prochain jour de paiement",
   "days-left-to-pay": "jours restants pour payer",
   "start date": "date de début",
-  "debt": "dette"
+  "debt": "dette",
+  "ticket-language": "Langue du billet"
 }

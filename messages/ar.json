@@ -587,5 +587,6 @@
   "next-payment-day": "يوم الدفع التالي",
   "days-left-to-pay": "الأيام المتبقية للدفع",
   "start date": "تاريخ البدء",
-  "debt": "دَين"
+  "debt": "دَين",
+  "ticket-language": "لغة التذكرة"
 }
