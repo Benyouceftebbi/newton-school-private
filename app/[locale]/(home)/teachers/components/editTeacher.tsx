@@ -239,24 +239,27 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
   const [schoolType, setSchoolType] = React.useState('');
 
   React.useEffect(() => {
-    const year = teacher.year;
+    if(teacher.year){
+      const year = teacher.year;
 
 
-    if (JSON.stringify(middleSchoolYears) === JSON.stringify(year)) {
-      setSchoolType('متوسط');
-    } else if (JSON.stringify(highSchoolYears) === JSON.stringify(year)) {
-      setSchoolType('high');
-    } else if (JSON.stringify(universitySchoolYears) === JSON.stringify(year)) {
-      setSchoolType('جامعي');
-    } else if (JSON.stringify(priarySchoolYears) === JSON.stringify(year)) {
-      setSchoolType('ابتدائي');
-    } else if (JSON.stringify(languageSchoolYears) === JSON.stringify(year)) {
-      setSchoolType('لغات');
-    } else if (JSON.stringify(["تحضيري"]) === JSON.stringify(year)) {
-      setSchoolType('تحضيري');
-    } else {
-      setSchoolType(''); // Default to empty or any other value you prefer
+      if (JSON.stringify(middleSchoolYears) === JSON.stringify(year)) {
+        setSchoolType('متوسط');
+      } else if (JSON.stringify(highSchoolYears) === JSON.stringify(year)) {
+        setSchoolType('high');
+      } else if (JSON.stringify(universitySchoolYears) === JSON.stringify(year)) {
+        setSchoolType('جامعي');
+      } else if (JSON.stringify(priarySchoolYears) === JSON.stringify(year)) {
+        setSchoolType('ابتدائي');
+      } else if (JSON.stringify(languageSchoolYears) === JSON.stringify(year)) {
+        setSchoolType('لغات');
+      } else if (JSON.stringify(["تحضيري"]) === JSON.stringify(year)) {
+        setSchoolType('تحضيري');
+      } else {
+        setSchoolType(''); // Default to empty or any other value you prefer
+      }
     }
+   
   }, [middleSchoolYears, highSchoolYears, universitySchoolYears, priarySchoolYears, languageSchoolYears,teacher]);
   
 const handleSchoolTypeChange = (type) => {
