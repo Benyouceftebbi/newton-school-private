@@ -9,7 +9,7 @@ admin.initializeApp();
 
 
 
-exports.createUserAndAssignRole = onCall(async (request) => {
+exports.createUserAndAssignRole = onCall({cors:true},async (request) => {
   try {
     const { data } = request;
     var password = generator.generate({

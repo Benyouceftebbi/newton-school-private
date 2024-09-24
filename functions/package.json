@@ -14,6 +14,7 @@
   "main": "index.js",
   "dependencies": {
     "@googleapis/calendar": "^9.7.3",
+    "date-fns": "^4.1.0",
     "firebase-admin": "^12.1.1",
     "firebase-functions": "^5.0.1",
     "generate-password": "^1.7.1",

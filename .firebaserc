@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "newton-sch"
-  }
+    "default": "newton-sch",
+    "staging": "nadjah-779be"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }
