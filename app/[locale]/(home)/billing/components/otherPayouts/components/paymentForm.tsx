@@ -39,6 +39,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { downloadInvoice } from "./generateInvoice";
 import { format } from "date-fns";
+import {useUser} from '@/lib/auth'
+
 const fieldNames = [
   "paymentTitle",
   "paymentAmount",
@@ -68,6 +70,7 @@ type FormKeys =
     source:any;
   }
 export default function PaymentForm() {
+  const user = useUser()
   const { toast } = useToast();
   const [status, setstatus] = useState(false);
   const {payouts,setPayouts,setAnalytics}=useData()
@@ -182,7 +185,7 @@ export default function PaymentForm() {
   };
 
   async function onSubmit(data:PaymentFormValues) {
-    const payoutId= await addPayment({...data,documents:[]})
+    const payoutId= await addPayment({...data,documents:[]},user)
     const uploaded = await uploadFilesAndLinkToCollection("Billing/payouts/Payout", payoutId, filesToUpload);
     const month=getMonthInfo(data.paymentDate)
     setPayouts((prev: PaymentFormValues[]) => [
