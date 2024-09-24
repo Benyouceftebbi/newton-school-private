@@ -7,7 +7,24 @@ import { z } from "zod";
 import { addWeeks } from "date-fns";
 
 
+async function logAction(userId: string, userType: string, resourceType: string, resourceId: string, action: string, additionalInfo: object = {}) {
+  const actionLog = {
+    userId,
+    userType,
+    resourceType,
+    resourceId,
+    action,
+    timestamp: new Date().toISOString(),
+    additionalInfo
+  };
 
+  // Save the action log in Firestore
+  const log = await doc(db, resourceType, resourceId)
+  await updateDoc(log,{
+    actionTrack: arrayUnion(actionLog)
+  });
+  return log;
+}
 
 
 export function getMonthInfo(date:Date) {
@@ -46,8 +63,10 @@ const months = [
     { abbreviation: 'Nov', name: 'November' },
     { abbreviation: 'Dec', name: 'December' }
   ];
-  export const addTeacherSalary = async (transaction: any) => {
+  export const addTeacherSalary = async (transaction: any,user:any) => {
     try {
+      const role = user.role === null ? 'admin' : user.role;
+
         // Calculate the new total advance payment after applying the transaction amount
         const result = applyPayment(transaction.teacher.totalAdvancePayment, transaction.amount);
         console.log("results",result);
@@ -65,7 +84,8 @@ const months = [
         await updateDoc(doc(db, "Billing", "payouts"), {
             teachersExpenses: increment(result.paymentAmount),
         });
-        
+        await logAction(user.uid, role, 'Teachers', transaction.teacher.id, 'add new Salary', { Teacherid:transaction.teacher.id,transactionDate:transaction.date,transactionAmount:result});
+
         // Retrieve the analytics document to update monthly and total expenses
         const analyticsRef = doc(db, "Billing", "analytics");
         const analyticsDoc = await getDoc(analyticsRef);
