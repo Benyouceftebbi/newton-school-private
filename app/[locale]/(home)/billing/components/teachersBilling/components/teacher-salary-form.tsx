@@ -43,6 +43,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Timestamp, updateDoc } from "firebase/firestore";
 import ReactToPrint from "react-to-print";
+import {useUser} from '@/lib/auth'
 
 const fieldNames = [
     "teacher",
@@ -289,6 +290,8 @@ const applyPayment = (totalAdvancePayment, paymentAmount) => {
     }
   });
 export default function PaymentForm() {
+  const user = useUser()
+
   const { toast } = useToast();
   const {setTeachersSalary} = useData()
   const {teachers,setAnalytics,classes,setTeachers,setClasses,analytics,profile}= useData()
@@ -386,7 +389,6 @@ const [teacherModal,setTeacherModal]=useState(false)
     name: "expenses",
 
   });
-
 
   const renderInput = (fieldName:string, field:any) => {
     switch (fieldName) {
@@ -508,7 +510,7 @@ const [teacherModal,setTeacherModal]=useState(false)
             return (<Input {...field} readOnly />);
           case "reimbursement":
                 return (<Input {...field} readOnly/>);
-                case "advancePayment"|| "netSalary":
+                case "advancePayment":
                   return (<Input {...field} readOnly/>);
                   case "amount":
                     return (<Input {...field} onChange={event => field.onChange(+event.target.value)}/>)
@@ -517,13 +519,14 @@ const [teacherModal,setTeacherModal]=useState(false)
     }
   };
 
+
   const reactToPrintRef = React.useRef();
   async function onSubmit(data: any) {
     try {
       const month = getMonthInfo(data.date);
   
       // Add Teacher Salary
-      const teacherId = await addTeacherSalary({ ...data, documents: [] });
+      const teacherId = await addTeacherSalary({ ...data, documents: []},user);
   
       // Upload files and link them to the collection
       const uploaded = await uploadFilesAndLinkToCollection("Billing/payouts/TeachersTransactions", teacherId, filesToUpload);
