@@ -178,7 +178,6 @@ const handleYearToggle = (field:string) => {
 const {classes,profile}=useData()
 const checkRoomAvailability = useCallback((newGroup: Group, allRooms: string[]): string[] => {
   const { day, start, end } = newGroup;
-  console.log(day, start, end);
   // Check if any of the required fields are missing
   if (!day || !start || !end) {
     return [];
@@ -193,7 +192,7 @@ const checkRoomAvailability = useCallback((newGroup: Group, allRooms: string[]):
       classItem.groups.some((group) => {
         const groupStart = parseTime(group.start);
         const groupEnd = parseTime(group.end);
-
+        
         return group.day === day &&
           group.room === room &&
           ((isBefore(newGroupStart, groupEnd) && isAfter(newGroupEnd, groupStart)) ||
@@ -298,7 +297,7 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
       ? currentFields.filter(f => f !== field)
       : [...currentFields, field]
     newGroups[groupIndex].stream = updatedFields
-    console.log(newGroups);
+
     
    form.setValue(`classes`,newGroups)
   }

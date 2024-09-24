@@ -75,7 +75,7 @@ export const StudentPaymentTable = () => {
         group: studentInClass?.group || '',
         debt: studentInClass?.debt || 0,
         amount: studentInClass?.amount || 0,
-        nextPaymentDate:studentInClass?.nextPaymentDate || new Date(),
+        nextPaymentDate:studentInClass?.nextPaymentDate || null,
       }
     })
   }
@@ -130,11 +130,9 @@ export const StudentPaymentTable = () => {
                   style: "currency",
                   currency: "DZD",
                 }).format(cls.debt)}</div>}
-              <div >{t('next-payment-date')}:
-  {cls.nextPaymentDate instanceof Date && !isNaN(cls.nextPaymentDate.getTime())
-    ? new Date(cls.nextPaymentDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    : "N/A"} {/* Fallback if the date is invalid */}
-</div>
+              {cls.nextPaymentDate!=null &&(<div >{t('next-payment-date')}:
+{new Date(cls.nextPaymentDate.toDate()).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+</div>)}
 
               </div>
             ))}

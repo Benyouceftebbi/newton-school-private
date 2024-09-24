@@ -508,7 +508,7 @@ const [teacherModal,setTeacherModal]=useState(false)
             return (<Input {...field} readOnly />);
           case "reimbursement":
                 return (<Input {...field} readOnly/>);
-                case "advancePayment":
+                case "advancePayment"|| "netSalary":
                   return (<Input {...field} readOnly/>);
                   case "amount":
                     return (<Input {...field} onChange={event => field.onChange(+event.target.value)}/>)
