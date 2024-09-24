@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { arrayUnion, getDoc, updateDoc } from "firebase/firestore";
+import {useUser} from '@/lib/auth'
 
 import {
   Form,
@@ -151,7 +152,7 @@ export default function StudentPaymentForm() {
   const [studentModal,setStudentModal]=React.useState(false)
   const [paymentPlanModal,setPaymentPlanModal]=React.useState(false)
   const[printBill,setPrintBill]=useState(false)
-
+  const user = useUser()
   
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([]);
   const form = useForm<any>({
@@ -374,7 +375,7 @@ const onSelected = (selectedStudent: any) => {
       // Iterate over each filtered class and process the payment
       for (const item of data.filtredclasses) {
         // Prepare the transaction data
-        const updatedStudents = await updateSessionLeft(item.id, data.student, item);
+        const updatedStudents = await updateSessionLeft(item.id, data.student, item,user);
   
         setClasses((prev) =>
           prev.map((cls) =>
