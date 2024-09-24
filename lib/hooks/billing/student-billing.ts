@@ -16,14 +16,38 @@ const months = [
   { abbreviation: 'Nov', name: 'November' },
   { abbreviation: 'Dec', name: 'December' }
 ]; 
+
+async function logAction(userId: string, userType: string, resourceType: string, resourceId: string, action: string, additionalInfo: object = {}) {
+  const actionLog = {
+    userId,
+    userType,
+    resourceType,
+    resourceId,
+    action,
+    timestamp: new Date().toISOString(),
+    additionalInfo
+  };
+
+  // Save the action log in Firestore
+  const log = await doc(db, resourceType, resourceId)
+  await updateDoc(log,{
+    actionTrack: arrayUnion(actionLog)
+  });
+  return log;
+}
 function getMonthInfo(date: Date) {
   const monthIndex = date.getMonth(); // Get the month index (0-11)
   const monthInfo = months[monthIndex]; // Get the corresponding month object
   return { fullName: monthInfo.name, abbreviation: monthInfo.abbreviation };
 }
 type StudentPaymentFormValues = z.infer<any> & {documents?:any[]};
-export const addPaymentTransaction = async (transaction: any, studentID: string) => {
+
+export const addPaymentTransaction = async (transaction: any, studentID: string,user:any) => {
+    const role = user.role === null ? 'admin' : user.role;
     const month = getMonthInfo(transaction.paymentDate);
+
+    await logAction(user.uid, role, 'Students', studentID, 'add new payment', { studentId:studentID,transactionDate:transaction.paymentDate,transactionAmount: transaction.amount,groupPaid:transaction.group});
+
     try {
         // Validate studentID
         if (!studentID) {
@@ -44,7 +68,7 @@ export const addPaymentTransaction = async (transaction: any, studentID: string)
             // months: arrayUnion(...months) // Uncomment and modify if using months
         });
 
-        const analyticsRef = doc(db, "Billing", "analytics");
+    const analyticsRef = doc(db, "Billing", "analytics");
     const analyticsDoc = await getDoc(analyticsRef);
 
     if (!analyticsDoc.exists()) {
@@ -172,8 +196,10 @@ return updatedStudents
   }
 }
 
-export async function updateSessionLeft(groupId, studentData, item) {
+export async function updateSessionLeft(groupId, studentData, item,user) {
   try {
+    const role = user.role === null ? 'admin' : user.role;
+
     // Fetch the group document
     const groupDoc = await getDoc(doc(db, 'Groups', groupId));
     
@@ -189,6 +215,7 @@ export async function updateSessionLeft(groupId, studentData, item) {
           }
         : std
     );
+    await logAction(user.uid, role, 'Students', studentData.id, 'reimbursment', { studentId:studentData.id,group:groupId,NewnumberOfsessionTostudy: item.sessionsToStudy,newDebt:item.debt});
 
     // Update the group document with the modified students array
     await updateDoc(doc(db, 'Groups', groupId), {
