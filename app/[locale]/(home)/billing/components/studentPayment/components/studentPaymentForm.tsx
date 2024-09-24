@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { arrayUnion, getDoc, updateDoc } from "firebase/firestore";
+import {useUser} from '@/lib/auth'
 
 import {
   Form,
@@ -146,6 +147,7 @@ export default function StudentPaymentForm() {
   const [studentModal,setStudentModal]=React.useState(false)
   const [paymentPlanModal,setPaymentPlanModal]=React.useState(false)
   const[printBill,setPrintBill]=useState(false)
+  const user = useUser()
 
   
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([]);
@@ -387,7 +389,7 @@ const onSelected = (selectedStudent: any) => {
         };
   
         // Add payment transaction
-        await addPaymentTransaction(transaction, data.id);
+        await addPaymentTransaction(transaction, data.id,user);
   
         // Update student payment info in Firestore
         const updatedStudents = await updateStudentPaymentInfo(item.id, data.student, item);
