@@ -1,5 +1,5 @@
 import { db } from "@/firebase/firebase-config";
-import { addDoc, collection, doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, increment, setDoc, updateDoc, arrayUnion} from "firebase/firestore";
 import { PaymentRegistrationSchema } from "@/validators/paymentSchema";
 import { z } from "zod";
 import { getMonthInfo } from "./teacherPayment";
@@ -18,13 +18,48 @@ const months = [
   { abbreviation: 'Nov', name: 'November' },
   { abbreviation: 'Dec', name: 'December' }
 ];
+async function logAction(userId: string, userType: string, resourceType: string, resourceId: string, action: string, additionalInfo: object = {}) {
+  const actionLog = {
+    userId,
+    userType,
+    resourceType,
+    resourceId,
+    action,
+    timestamp: new Date().toISOString(),
+    additionalInfo
+  };
+
+  // Reference to the document
+  const logRef = doc(db, resourceType, resourceId);
+  
+  // Check if the document exists
+  const docSnap = await getDoc(logRef);
+
+  if (!docSnap.exists()) {
+    // If document doesn't exist, create it with the actionTrack array
+    await setDoc(logRef, {
+      actionTrack: [actionLog]
+    });
+  } else {
+    // If document exists, append the actionLog to the actionTrack array
+    await updateDoc(logRef, {
+      actionTrack: arrayUnion(actionLog)
+    });
+  }
+
+  return logRef;
+}
 
 type PaymentFormValues = z.infer<typeof PaymentRegistrationSchema> & { documents?: any };
 
-export const addPayment = async (transaction: PaymentFormValues) => {
+export const addPayment = async (transaction: PaymentFormValues,user:any) => {
   try {
+    const role = user.role === null ? 'admin' : user.role;
+
     const month = getMonthInfo(transaction.paymentDate);
     const paymentTransRef = await addDoc(collection(db, "Billing", "payouts", "Payout"), transaction);
+
+    await logAction(user.uid, role, "Billing", "payouts", 'add new payment', { transactionAmount: transaction.paymentAmount,typeofPayment:transaction.typeofPayment,paymentDate:transaction.paymentDate,fromWho:transaction.fromWho});
 
     // Reference to the added document
     const key = transaction.typeofPayment;
