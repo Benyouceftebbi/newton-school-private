@@ -20,60 +20,48 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-// Mock data for demonstration
-const usersActions = [
-  {
-    id: 1,
-    name: "User X",
-    actions: [
-      { id: 1, type: "payment", description: "Got payment for student Adam", amount: 3000, currency: "DZD", date: "2024-09-29T14:00:00" },
-      { id: 2, type: "create_student", description: "Created student Roger", subscription: 500, currency: "DZD", date: "2024-09-20T09:00:00" },
-      { id: 3, type: "login", description: "Logged in", date: "2024-09-29T08:30:00" },
-      { id: 4, type: "logout", description: "Logged out", date: "2024-09-29T17:45:00" },
-    ]
-  },
-  {
-    id: 2,
-    name: "User Y",
-    actions: [
-      { id: 5, type: "payment", description: "Got payment for student Sarah", amount: 2500, currency: "DZD", date: "2024-09-28T10:30:00" },
-      { id: 6, type: "create_student", description: "Created student Emma", subscription: 600, currency: "DZD", date: "2024-09-22T11:15:00" },
-      { id: 7, type: "login", description: "Logged in", date: "2024-09-28T09:00:00" },
-      { id: 8, type: "logout", description: "Logged out", date: "2024-09-28T18:00:00" },
-    ]
-  },
-]
+import { useData } from "@/context/admin/fetchDataContext"
 
 export default function AdminTrackRole() {
+  const { students, teachers, payoutsActionTrack } = useData()
   const [searchTerm, setSearchTerm] = useState("")
   const [date, setDate] = useState<Date>()
   const [actionType, setActionType] = useState("all")
 
+  const allActionTracks = useMemo(() => {
+    const studentActionTracks = students?.flatMap(student => student.actionTrack) || []
+    const teacherActionTracks = teachers?.flatMap(teacher => teacher.actionTrack) || []
+    return [...payoutsActionTrack, ...studentActionTracks, ...teacherActionTracks]
+  }, [students, teachers, payoutsActionTrack])
+
   const filterActions = (actions) => {
     return actions.filter(action => {
-      const matchesSearch = action.description.toLowerCase().includes(searchTerm.toLowerCase())
-      const actionDate = new Date(action.date)
+      const matchesSearch = action.action.toLowerCase().includes(searchTerm.toLowerCase())
+      const actionDate = new Date(action.timestamp)
       const matchesDate = date ? actionDate.toDateString() === date.toDateString() : true
-      const matchesType = actionType === "all" || action.type === actionType
+      const matchesType = actionType === "all" || action.action === actionType
       return matchesSearch && matchesDate && matchesType
     })
   }
 
   const actionTypes = useMemo(() => {
-    const types = new Set(usersActions.flatMap(user => user.actions.map(action => action.type)))
+    const types = new Set(allActionTracks.map(action => action.action))
     return ["all", ...types]
-  }, [])
+  }, [allActionTracks])
+
+  const userTypes = useMemo(() => {
+    const types = new Set(allActionTracks.map(action => action.userType))
+    return Array.from(types)
+  }, [allActionTracks])
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-full p-4">
       <h1 className="text-2xl font-bold mb-4">Admin Track Role</h1>
       
-      <Tabs defaultValue="all" className="w-full mb-6">
+      <Tabs defaultValue={userTypes[0]} className="w-full mb-6">
         <TabsList>
-          <TabsTrigger value="all">All Users</TabsTrigger>
-          {usersActions.map(user => (
-            <TabsTrigger key={user.id} value={user.id.toString()}>{user.name}</TabsTrigger>
+          {userTypes.map(type => (
+            <TabsTrigger key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</TabsTrigger>
           ))}
         </TabsList>
 
@@ -108,58 +96,11 @@ export default function AdminTrackRole() {
           </Popover>
         </div>
 
-        <TabsContent value="all">
-          {usersActions.map(user => (
-            <Card key={user.id} className="mb-6">
-              <CardHeader>
-                <CardTitle>{user.name}&apos;s Actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-full justify-start">
-                              Type <ChevronDown className="ml-2 h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start">
-                            {actionTypes.map((type) => (
-                              <DropdownMenuItem key={type} onClick={() => setActionType(type)}>
-                                {type.charAt(0).toUpperCase() + type.slice(1)}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Amount/Subscription</TableHead>
-                      <TableHead>Date & Time</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filterActions(user.actions).map(action => (
-                      <TableRow key={action.id}>
-                        <TableCell className="font-medium">{action.type.charAt(0).toUpperCase() + action.type.slice(1)}</TableCell>
-                        <TableCell>{action.description}</TableCell>
-                        <TableCell>{action.amount || action.subscription} {action.currency}</TableCell>
-                        <TableCell>{new Date(action.date).toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        {usersActions.map(user => (
-          <TabsContent key={user.id} value={user.id.toString()}>
+        {userTypes.map(userType => (
+          <TabsContent key={userType} value={userType}>
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>{user.name}&apos;s Actions</CardTitle>
+                <CardTitle>{userType.charAt(0).toUpperCase() + userType.slice(1)} Actions</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -181,18 +122,18 @@ export default function AdminTrackRole() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Amount/Subscription</TableHead>
+                      <TableHead>Additional Info</TableHead>
+                      <TableHead>User ID</TableHead>
                       <TableHead>Date & Time</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filterActions(user.actions).map(action => (
-                      <TableRow key={action.id}>
-                        <TableCell className="font-medium">{action.type.charAt(0).toUpperCase() + action.type.slice(1)}</TableCell>
-                        <TableCell>{action.description}</TableCell>
-                        <TableCell>{action.amount || action.subscription} {action.currency}</TableCell>
-                        <TableCell>{new Date(action.date).toLocaleString()}</TableCell>
+                    {filterActions(allActionTracks.filter(action => action.userType === userType)).map((action, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{action.action}</TableCell>
+                        <TableCell>{JSON.stringify(action.additionalInfo)}</TableCell>
+                        <TableCell>{action.userId}</TableCell>
+                        <TableCell>{new Date(action.timestamp).toLocaleString()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
