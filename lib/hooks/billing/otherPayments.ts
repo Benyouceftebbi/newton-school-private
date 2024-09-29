@@ -59,7 +59,7 @@ export const addPayment = async (transaction: PaymentFormValues,user:any) => {
     const month = getMonthInfo(transaction.paymentDate);
     const paymentTransRef = await addDoc(collection(db, "Billing", "payouts", "Payout"), transaction);
 
-    await logAction(user.uid, role, "Billing", "payouts", 'add new payment', { transactionAmount: transaction.paymentAmount,typeofPayment:transaction.typeofPayment,paymentDate:transaction.paymentDate,fromWho:transaction.fromWho});
+    await logAction(user.uid, role, "Billing", "payouts", 'add new Expenses', { transactionAmount: transaction.paymentAmount,typeofPayment:transaction.typeofPayment,paymentDate:transaction.paymentDate,fromWho:transaction.fromWho});
 
     // Reference to the added document
     const key = transaction.typeofPayment;
