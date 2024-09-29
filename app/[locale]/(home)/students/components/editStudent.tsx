@@ -141,19 +141,27 @@ const convertSessionToDate = (session: Session, startDate: Date, endDate: Date):
 
   let currentDate = new Date(startDate);
 
-  // Move currentDate to the first session day on or after startDate
+  // Include startDate if it falls on the session day
+  if (currentDate.getDay() === sessionDayIndex) {
+    const [hours, minutes] = session.start.split(':').map(Number);
+    const sessionDate = new Date(currentDate);
+    sessionDate.setHours(hours, minutes, 0, 0); // Set seconds and milliseconds to 00
+    sessionDates.push(sessionDate); // Add startDate session
+  }
+
+  // Move currentDate to the first session day after the startDate if necessary
   while (currentDate.getDay() !== sessionDayIndex) {
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  // Add sessions within the range
+  // Add sessions within the range from startDate to endDate
   while (currentDate <= endDate) {
     const [hours, minutes] = session.start.split(':').map(Number);
     const sessionDate = new Date(currentDate);
-    sessionDate.setHours(hours, minutes);
+    sessionDate.setHours(hours, minutes, 0, 0); // Set seconds and milliseconds to 00
 
-    // Include the session if it is on or after the startDate
-    if (sessionDate >= startDate) {
+    // Include the session if it's after the first already included sessionDate
+    if (sessionDate > startDate) {
       sessionDates.push(sessionDate);
     }
 
@@ -161,28 +169,20 @@ const convertSessionToDate = (session: Session, startDate: Date, endDate: Date):
     currentDate.setDate(currentDate.getDate() + 7);
   }
 
-  // Check if the nextPaymentDate is on a session day
+  // Handle nextPaymentDate separately
   const [endHours, endMinutes] = session.start.split(':').map(Number);
   let paymentDate = new Date(endDate);
-  paymentDate.setHours(endHours, endMinutes);
+  paymentDate.setHours(endHours, endMinutes, 0, 0); // Set seconds and milliseconds to 00
 
-  if (paymentDate.getDay() === sessionDayIndex && paymentDate <= endDate) {
+  // Only add paymentDate if it's on the session day and not already in the list
+  const lastSessionDate = sessionDates[sessionDates.length - 1];
+  if (paymentDate.getDay() === sessionDayIndex && (!lastSessionDate || lastSessionDate.getTime() !== paymentDate.getTime())) {
     sessionDates.push(paymentDate);
-  }
-
-  // Check if the first session date has passed the current time
-  if (sessionDates.length > 0) {
-    const firstSessionDate = sessionDates[0];
-    const now = new Date();
-    
-    if (now > firstSessionDate) {
-      // Include the first session if the current time is past the session time
-      sessionDates.shift();
-    }
   }
 
   return sessionDates;
 };
+
 
 function calculateAmountDue(
   startDate: Date, 
@@ -195,16 +195,16 @@ function calculateAmountDue(
   // Adjust start date if enrollment date is before the start date
   const effectiveStartDate = isBefore(enrollmentDate, startDate) ? startDate : enrollmentDate;
 
+  const convertedSessionDates = sessionDates.flatMap(session => convertSessionToDate(session, startDate, nextPaymentDate));
+  
 
-  const convertedSessionDates = sessionDates.flatMap(session => convertSessionToDate(session, effectiveStartDate, nextPaymentDate));
 
   
   // Filter sessions between effective start date and next payment date
   const sessionsLeft = convertedSessionDates.filter(date => 
       isAfter(date, effectiveStartDate) && isBefore(date, nextPaymentDate) || date.toDateString() === effectiveStartDate.toDateString()
   ).length;
-
-
+  console.log("Date", convertedSessionDates);
 
   const sessionRate = monthlyAmount / sessionsPerMonth;
 
