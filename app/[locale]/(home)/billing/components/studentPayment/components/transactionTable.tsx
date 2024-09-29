@@ -56,7 +56,7 @@ import { downloadInvoice } from "./generateInvoice";
 
 type Status = "paid" | "not paid" | "rejected";
 export const TransactionDataTableDemo = () => {
-  const { students, invoices } = useData();
+  const { students, invoices,profile } = useData();
   const [invoice, setInvoice] = React.useState<any>(null);
   const t = useTranslations();
   const [open, setOpen] = React.useState(false);
@@ -121,7 +121,293 @@ console.log('ffff',invoices );
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-
+const handlePrint=(data)=>{
+  const billHtml = profile.ticketLanguage === 'ar' ?`
+  <!DOCTYPE html>
+  <html lang="ar" dir="rtl">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>وصل استلام</title>
+      <style>
+          @page {
+              size: A4;
+              margin: 0;
+          }
+          body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f4f4f4;
+              direction: rtl;
+              height: 100%;
+          }
+          .receipt {
+              position: relative;
+              width: 100%;
+              height: 100vh;
+              background-color: white;
+              border: 1px solid #ddd;
+              padding: 20px;
+              box-sizing: border-box;
+          }
+          .header {
+              text-align: center;
+              margin-bottom: 10px;
+          }
+          .title {
+              font-size: 50px;
+              font-weight: bold;
+              margin: 0;
+          }
+          .subtitle {
+              font-size: 40px;
+              margin: 5px 0;
+          }
+          .content {
+              text-align: right;
+              font-size: 36px;
+              margin-bottom: 20px;
+          }
+          .row {
+              margin-bottom: 8px;
+          }
+          .amount {
+              border: 3px solid black;
+              padding: 25px;
+              text-align: center;
+              font-weight: bold;
+              font-size: 48px;
+              margin: 20px 0;
+          }
+          table {
+              width: 100%;
+              margin-bottom: 20px;
+              border-collapse: collapse;
+              font-size: 26px;
+          }
+          th, td {
+              border: 2px solid #ddd;
+              padding: 20px;
+              text-align: center;
+          }
+          th {
+              background-color: #f4f4f4;
+              font-weight: bold;
+          }
+          .footer {
+              border-top: 2px solid #ddd;
+              padding-top: 25px;
+              font-size: 36px;
+              text-align: center;
+              position: absolute;
+              bottom: 0;
+              width: calc(100% - 40px);
+          }
+          .thank-you {
+              font-size: 42px;
+              margin-top: 10px;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="receipt">
+          <div>                                 
+              <div class="header">
+                  <h1 class="title">${profile.schoolName}</h1>
+                  <p class="subtitle">2024/2025</p>
+                  <p class="subtitle"><strong>وصل استلام</strong></p>
+              </div>
+              <div class="content">
+                  <div class="row">
+                      <span>${format(new Date(), "dd-MM-yyyy")}</span>
+                  </div>
+                  <div class="row">الاسم و اللقب: ${data.student.student}</div>
+                  <div class="amount">المبلغ: ${data.filtredclasses.reduce((total, cls) => total + cls.amountPaid, 0)}</div>
+                  <table>
+                      <thead>
+                          <tr>
+                              <th>المجموعة</th>
+                              <th>المادة</th>
+                              <th>الدين المتبقي</th>
+                              <th>الجلسات المتبقية</th>
+                              <th>المبلغ المدفوع</th>
+                              <th>تاريخ الدفع التالي</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          ${data.filtredclasses.map(cls => `
+                              <tr>
+                                  <td>${cls.group}</td>
+                                  <td>${cls.subject}</td>
+                                  <td>${Math.abs(cls.debt - cls.amountPaid)}</td>
+                                  <td>${cls.sessionsLeft}</td>
+                                  <td>${cls.amountPaid}</td>
+                                  <td>${format(new Date(cls.nextPaymentDate), "dd-MM-yyyy")}</td>
+                                  <td></td>
+                              </tr>
+                          `).join('')}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+          <div class="footer">
+              <p><strong>يرجى الاحتفاظ بالوصل</strong></p>
+              <div class="thank-you">شكراً لكم</div>
+          </div>
+      </div>
+  </body>
+  </html>
+  `: `
+  <!DOCTYPE html>
+  <html lang="fr" dir="ltr">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Reçu de Paiement</title>
+      <style>
+          @page {
+              size: A4;
+              margin: 0;
+          }
+          body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f4f4f4;
+              direction: ltr;
+              height: 100%;
+          }
+          .receipt {
+              position: relative;
+              width: 100%;
+              height: 100vh;
+              background-color: white;
+              border: 1px solid #ddd;
+              padding: 20px;
+              box-sizing: border-box;
+          }
+          .header {
+              text-align: center;
+              margin-bottom: 10px;
+          }
+          .title {
+              font-size: 50px;
+              font-weight: bold;
+              margin: 0;
+          }
+          .subtitle {
+              font-size: 40px;
+              margin: 5px 0;
+          }
+          .content {
+              text-align: left;
+              font-size: 36px;
+              margin-bottom: 20px;
+          }
+          .row {
+              margin-bottom: 8px;
+          }
+          .amount {
+              border: 3px solid black;
+              padding: 25px;
+              text-align: center;
+              font-weight: bold;
+              font-size: 48px;
+              margin: 20px 0;
+          }
+          table {
+              width: 100%;
+              margin-bottom: 20px;
+              border-collapse: collapse;
+              font-size: 26px;
+          }
+          th, td {
+              border: 2px solid #ddd;
+              padding: 20px;
+              text-align: center;
+          }
+          th {
+              background-color: #f4f4f4;
+              font-weight: bold;
+          }
+          .footer {
+              border-top: 2px solid #ddd;
+              padding-top: 25px;
+              font-size: 36px;
+              text-align: center;
+              position: absolute;
+              bottom: 0;
+              width: calc(100% - 40px);
+          }
+          .thank-you {
+              font-size: 42px;
+              margin-top: 10px;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="receipt">
+          <div>
+              <div class="header">
+                  <h1 class="title">${profile.schoolName}</h1>
+                  <p class="subtitle">2024/2025</p>
+                  <p class="subtitle"><strong>Reçu de Paiement</strong></p>
+              </div>
+              <div class="content">
+                  <div class="row">
+                      <span>${format(new Date(), "dd-MM-yyyy")}</span>
+                  </div>
+                  <div class="row">Nom et Prénom: ${data.student.student}</div>
+                  <div class="amount">Montant: ${data.filtredclasses.reduce((total, cls) => total + cls.amountPaid, 0)}</div>
+                  <table>
+                      <thead>
+                          <tr>
+                              <th>Groupe</th>
+                              <th>Matière</th>
+                              <th>Dette Restante</th>
+                              <th>Séances Restantes</th>
+                              <th>Montant Payé</th>
+                              <th>Prochaine Date de Paiement</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          ${data.filtredclasses.map(cls => `
+                              <tr>
+                                  <td>${cls.group}</td>
+                                  <td>${cls.subject}</td>
+                                  <td>${Math.abs(cls.debt - cls.amountPaid)}</td>
+                                  <td>${cls.sessionsLeft}</td>
+                                  <td>${cls.amountPaid}</td>
+                                 <td>${format(new Date(cls.nextPaymentDate), "dd-MM-yyyy")}</td>
+                              </tr>
+                          `).join('')}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+          <div class="footer">
+              <p><strong>Veuillez conserver le reçu</strong></p>
+              <div class="thank-you">Merci</div>
+          </div>
+      </div>
+  </body>
+  </html>
+  `;
+        
+    
+        // Open a new window and print the bill
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.open();
+          printWindow.document.write(billHtml);
+          printWindow.document.close();
+          printWindow.onload = function() {
+            printWindow.focus();
+            printWindow.print();
+          };
+        }
+}
   const columns: ColumnDef<any>[] = [
     {
       id:"student",
@@ -158,6 +444,12 @@ console.log('ffff',invoices );
       enableHiding: false,
       cell: ({ row }) => {
         const invoice = row.original;
+        
+        
+        const data={student:{student:row.original.student.student},
+        filtredclasses:[{amountPaid:row.original.amount,group:invoice.group,subject:row.original.subject,debt:row.original.debt,
+          sessionsLeft:row.original.sessionsLeft,nextPaymentDate:row.original.nextPaymentDate}]}
+          console.log("jjkkjl;;;;;;",data);
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -171,36 +463,7 @@ console.log('ffff',invoices );
            
               <DropdownMenuItem
                 onClick={() =>
-                  downloadInvoice(
-                    {
-                      student: invoice.student,
-                      level: invoice.level,
-                      amount: invoice.amount,
-                      paymentDate: format(invoice.paymentDate, "dd/MM/yyyy"),
-                      status: t(invoice.status),
-                      fromWho: invoice.fromWho,
-                    },
-                    invoice.id,
-                    [
-                      t("student"),
-                      t("level"),
-                      t("parent"),
-                      t("amount"),
-                      t("paymentDate"),
-                      t("status"),
-                      t("fromWho"),
-                    ],
-                    {
-                      amount: t("Amount"),
-                      from: t("From:"),
-                      shippingAddress: t("shipping-address"),
-                      billedTo: t("billed-to"),
-                      subtotal: t("Subtotal:"),
-                      totalTax: t("total-tax-0"),
-                      totalAmount: t("total-amount-3"),
-                      invoice: t("invoice"),
-                    }
-                  )
+                 handlePrint(data)
                 }
               >
                 {t("print-bill")}
@@ -212,6 +475,7 @@ console.log('ffff',invoices );
     },
   ];
 
+  console.log("hjjkkjjkkhbkj",transactionsData);
   
   const table = useReactTable({
     data: transactionsData,
