@@ -22,13 +22,15 @@ export const  FetchDataProvider = ({ children }) => {
   const [analytics,setAnalytics]=useState({})
   const [teachersSalary,setTeachersSalary]=useState([]);
   const [payouts,setPayouts]=useState([]);
+  const [payoutsActionTrack,setPayoutsActionTrack] =useState([])
   useEffect(()=>{
     const getAnalytics=async()=>{
       try {
         const PayoutsSnapshot = await getDoc(doc(db, "Billing","analytics"));
         const otherPayoutsSnapShot= await getDoc(doc(db, "Billing","payouts"));
       
-        
+        const otherPayoutsData = otherPayoutsSnapShot.data();
+        setPayoutsActionTrack(otherPayoutsData.actionTrack || []);
      
        
      
@@ -98,7 +100,7 @@ export const  FetchDataProvider = ({ children }) => {
   
     getTeachersSalary();
   }, [date]);
-    useEffect(() => {
+  useEffect(() => {
     const getInvoices = async () => {
       try {
         
@@ -196,6 +198,7 @@ export const  FetchDataProvider = ({ children }) => {
             value:doc.id,
             label:doc.data().name,
             actionTrack: doc.data().actionTrack || []
+
           }
           const result = teacher.groupUIDs.flatMap(cls => {
             const classDetail = classesData.find(clss => clss.id === cls);
@@ -331,7 +334,7 @@ export const  FetchDataProvider = ({ children }) => {
     getProfile();
   }, []);
   return (
-    <AppContext.Provider value={{levels,setLevels,setParents,parents,profile,setProfile,students,setStudents,teachers,setTeachers,classes,setClasses,invoices,setInvoices,analytics,setAnalytics,teachersSalary,setTeachersSalary,payouts,setPayouts,date,setDate}}>
+    <AppContext.Provider value={{levels,setLevels,setParents,parents,profile,setProfile,students,setStudents,teachers,setTeachers,classes,setClasses,invoices,setInvoices,analytics,setAnalytics,teachersSalary,setTeachersSalary,payouts,setPayouts,date,setDate,payoutsActionTrack}}>
       {children}
     </AppContext.Provider>
   );
@@ -339,7 +342,6 @@ export const  FetchDataProvider = ({ children }) => {
 export const  useData =()=>{
 
 
- 
     const value=useContext(AppContext)
     try{
     if(!value){
