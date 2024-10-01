@@ -89,7 +89,8 @@ export async function uploadAndLinkToCollection(
       debt: classData.active? cls.debt : classData.amount,
       active:classData.active,
       ...(classData.active && { nextPaymentDate:classData?.nextPaymentDate }),
-      sessionsToStudy:cls.sessionsToStudy});
+      sessionsToStudy:cls.sessionsToStudy,
+    addedAt:cls.addedAt});
           }
           else{
             classUpdates.push({ classID: cls.id, newIndex, group: cls.group ,cs:cls.cs,
@@ -98,7 +99,8 @@ export async function uploadAndLinkToCollection(
               debt: 0,
               active:classData.active,
               ...(classData.active && { nextPaymentDate:classData?.nextPaymentDate }),
-              sessionsToStudy:0});
+              sessionsToStudy:0,
+              addedAt:cls.addedAt});
           }
      
         } else {
@@ -123,7 +125,8 @@ export async function uploadAndLinkToCollection(
               amount:update.amount,
               ...(update.active && { nextPaymentDate:update?.nextPaymentDate }),
               sessionsToStudy:update.sessionsToStudy,
-              debt:update.debt
+              debt:update.debt,
+              addedAt:update.addedAt
             })
           });
         }

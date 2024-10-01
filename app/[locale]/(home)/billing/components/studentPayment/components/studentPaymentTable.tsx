@@ -130,9 +130,22 @@ export const StudentPaymentTable = () => {
                   style: "currency",
                   currency: "DZD",
                 }).format(cls.debt)}</div>}
-              {cls.nextPaymentDate!=null &&(<div >{t('next-payment-date')}:
-{new Date(cls.nextPaymentDate.toDate()).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-</div>)}
+{cls.nextPaymentDate != null && (
+  <div>
+    {t('next-payment-date')}:
+    {typeof cls.nextPaymentDate.toDate === 'function'
+      ? new Date(cls.nextPaymentDate.toDate()).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
+      : new Date(cls.nextPaymentDate).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })}
+  </div>
+)}
 
               </div>
             ))}
