@@ -44,7 +44,7 @@ function CardTransactions(){
     return sum + (transaction.type === 'invoice' ? amount : -amount);
   }, 0);
   return (
-    <Card className="col-span-3">
+    <Card className="col-span-3 border-2 border-gray-200">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle>{t('recent-transactions')}</CardTitle>
