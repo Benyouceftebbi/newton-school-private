@@ -1,120 +1,101 @@
+"use client"
 
-import { Bar, BarChart, Line, LineChart, ResponsiveContainer } from "recharts"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { useTranslations } from "next-intl"
-import { useData } from "@/context/admin/fetchDataContext"
+import { useTranslations } from 'next-intl'
+import { useData } from '@/context/admin/fetchDataContext'
+import { Card, CardContent } from "@/components/ui/card"
+import { ArrowDownIcon, ArrowUpIcon, DollarSignIcon } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
 
-function CardIncome() {
-const t=useTranslations()
-const getMonthAbbreviation = (fullMonth:string) => {
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const monthIndex = monthNames.findIndex((month) => month.toLowerCase() === fullMonth?.toLowerCase());
-  return monthIndex !== -1 ? monthNames[monthIndex].slice(0, 3) : '';
-};
-const { analytics } = useData();
-const data:any[]=analytics.data?Object.keys(analytics.data).map((key:any) => ({
-  month:getMonthAbbreviation(analytics.data[key].month),
-  income:analytics.data[key].income || 0,
-  expenses:analytics.data[key].expenses || 0,
-})):[];
-const getCurrentMonthData = () => {
-  const currentMonth = new Date().toLocaleString('default', { month: 'short' });
-  return data.find(item => item.month === currentMonth);
-};
+type Transaction = {
+  amount?: number
+  paymentAmount?: number
+  type: 'invoice' | 'teacher' | 'payout'
+}
 
-const getPreviousMonthData = () => {
-  const currentMonthIndex = new Date().getMonth();
-  const previousMonthIndex = currentMonthIndex === 0 ? 11 : currentMonthIndex - 1;
-  const previousMonthName = new Date(0, previousMonthIndex).toLocaleString('default', { month: 'short' });
-  return data.find(item => item.month === previousMonthName);
-};
+export default function CardIncome() {
+  const t = useTranslations()
+  const { payouts, invoices, teachersSalary } = useData()
 
-const calculateRate = () => {
-  const currentMonthData = getCurrentMonthData();
-  const previousMonthData = getPreviousMonthData();
+  const allTransactions: Transaction[] = [
+    ...payouts.map(payout => ({ ...payout, type: 'payout' as const })),
+    ...invoices.flatMap(invoice => 
+      (invoice.transaction || []).map(transaction => ({
+        ...transaction,
+        type: 'invoice' as const
+      }))
+    ),
+    ...teachersSalary.map(transaction => ({
+      ...transaction,
+      type: 'teacher' as const
+    }))
+  ]
 
-  if (!currentMonthData || !previousMonthData) {
-    return null; // Data not found for current or previous month
-  }
+  const { totalIncome, totalExpenses } = allTransactions.reduce((acc, transaction) => {
+    const amount = transaction.amount || transaction.paymentAmount || 0
+    if (transaction.type === 'invoice') {
+      acc.totalIncome += amount
+    } else {
+      acc.totalExpenses += amount
+    }
+    return acc
+  }, { totalIncome: 0, totalExpenses: 0 })
 
-  const rate = ((currentMonthData.expenses - previousMonthData.expenses) / previousMonthData.expenses) * 100;
-  return rate.toFixed(2); // Return rate with two decimal places
-};
+  const totalAmount = totalIncome + totalExpenses
+  const incomePercentage = (totalIncome / totalAmount) * 100
+  const expensesPercentage = (totalExpenses / totalAmount) * 100
+
   return (
-    <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-normal">{t('total-expenses')}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold">DZD { data.reduce((acc, curr) => acc + curr.expenses, 0)}</div>
-      <p className="text-xs text-muted-foreground">
-{t("from-last-month",{rate:calculateRate()})}
-      </p>
-      <div className="h-[80px]">
-      <ResponsiveContainer width="100%" height="100%">
-      <LineChart
-            data={data}
-            margin={{
-              top: 5,
-              right: 10,
-              left: 10,
-              bottom: 0,
-            }}
-          >
-            <Line
-              type="monotone"
-              strokeWidth={2}
-              dataKey="expenses"
-              activeDot={{
-                r: 6,
-                style: { fill: "var(221.2 83.2% 53.3%)", opacity: 0.25 },
-              }}
-              style={
-                {
-                  stroke: "var(221.2 83.2% 53.3%)",
-                  "--theme-primary": `hsl(221.2 83.2% 53.3%)`,
-                } as React.CSSProperties
-              }
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </CardContent>
-  </Card>
-
-
+    <Card className="w-[395px] h-[235px] overflow-hidden border-2 border-gray-200">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">{t('financial-summary')}</h3>
+          <DollarSignIcon className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <div className="space-y-4">
+          <FinancialItem
+            title={t('total-income')}
+            amount={totalIncome}
+            percentage={incomePercentage}
+            icon={ArrowUpIcon}
+            isPositive={true}
+          />
+          <FinancialItem
+            title={t('total-expenses')}
+            amount={totalExpenses}
+            percentage={expensesPercentage}
+            icon={ArrowDownIcon}
+            isPositive={false}
+          />
+        </div>
+        <div className="mt-6">
+          <Progress value={incomePercentage} className="h-2" />
+        </div>
+      </CardContent>
+    </Card>
   )
 }
-export default CardIncome
-{/* <Card>
-<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-  <CardTitle className="text-sm font-normal">Subscriptions</CardTitle>
-</CardHeader>
-<CardContent>
-  <div className="text-2xl font-bold">+2350</div>
-  <p className="text-xs text-muted-foreground">
-    +180.1% from last month
-  </p>
-  <div className="mt-4 h-[80px]">
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data}>
-        <Bar
-          dataKey="subscription"
-          style={
-            {
-              fill: "var(--theme-primary)",
-              opacity: 1,
-              "--theme-primary": `hsl(221.2 83.2% 53.3%)`,
-            } as React.CSSProperties
-          }
-        />
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-</CardContent>
-</Card> */}
+
+type FinancialItemProps = {
+  title: string
+  amount: number
+  percentage: number
+  icon: React.ElementType
+  isPositive: boolean
+}
+
+function FinancialItem({ title, amount, percentage, icon: Icon, isPositive }: FinancialItemProps) {
+  const colorClass = isPositive ? 'text-green-500' : 'text-red-500'
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        <Icon className={`h-4 w-4 ${colorClass}`} />
+        <span className="text-sm font-medium">{title}</span>
+      </div>
+      <div className="text-right">
+        <div className="font-semibold">{amount.toLocaleString()} DZD</div>
+        <div className={`text-xs ${colorClass}`}>{percentage.toFixed(1)}%</div>
+      </div>
+    </div>
+  )
+}
