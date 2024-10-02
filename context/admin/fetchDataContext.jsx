@@ -254,6 +254,7 @@ export const  FetchDataProvider = ({ children }) => {
                 debt:studentDetail.debt,
                 nextPaymentDate:studentDetail.nextPaymentDate?new Date(studentDetail.nextPaymentDate.toDate()) : null,
                 sessionsToStudy:studentDetail.sessionsToStudy,
+                addedAt:studentDetail.addedAt|| student.lastPaymentDate
               };
             });
   
