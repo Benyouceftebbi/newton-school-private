@@ -52,7 +52,7 @@ const data = analytics?.data
 
   return (
 
-    <Card className="col-span-4">
+    <Card className="col-span-4 border-2 border-gray-200">
     <CardHeader>
       <CardTitle>{t('overview')}</CardTitle>
     </CardHeader>
