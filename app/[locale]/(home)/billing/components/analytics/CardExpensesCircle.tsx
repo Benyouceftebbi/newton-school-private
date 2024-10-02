@@ -75,7 +75,7 @@ const expensesData= Object.entries(rest).map(([name, value]) => ({
   };
   return (
 
-    <Card className="relative">
+    <Card className="relative border-2 border-gray-200">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 z-10 absolute w-full">
       <CardTitle className="text-sm font-medium">{t('expenses')}</CardTitle>
       <svg
