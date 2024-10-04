@@ -1142,227 +1142,169 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset, cal
   // Function to print bill
   const printBill = (studentName: string, fee: number) => {
     const billHtml = profile.ticketLanguage === 'ar' ? `
-    <!DOCTYPE html>
-    <html lang="ar" dir="rtl">
+    <html>
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>وصل استلام</title>
-        <style>
-            @page {
-                size: A4;
-                margin: 0;
-            }
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #f4f4f4;
-                direction: rtl;
-                height: 100%;
-            }
-            .receipt {
-                position: relative;
-                width: 100%;
-                height: 100vh;
-                background-color: white;
-                border: 1px solid #ddd;
-                padding: 20px;
-                box-sizing: border-box;
-            }
-            .header {
-                text-align: center;
-                margin-bottom: 10px;
-            }
-            .title {
-                font-size: 50px;
-                font-weight: bold;
-                margin: 0;
-            }
-            .subtitle {
-                font-size: 40px;
-                margin: 5px 0;
-            }
-            .content {
-                text-align: right;
-                font-size: 36px;
-                margin-bottom: 20px;
-            }
-            .row {
-                margin-bottom: 8px;
-            }
-            .amount {
-                border: 3px solid black;
-                padding: 25px;
-                text-align: center;
-                font-weight: bold;
-                font-size: 48px;
-                margin: 20px 0;
-            }
-            .footer {
-                border-top: 2px solid #ddd;
-                padding-top: 25px;
-                font-size: 36px;
-                text-align: center;
-                position: absolute;
-                bottom: 0;
-                width: calc(100% - 40px);
-            }
-            .thank-you {
-                font-size: 42px;
-                margin-top: 10px;
-            }
-        </style>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          width: 21cm;
+          height: 29.7cm;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .bill-container {
+          width: 8cm;
+          height: 21cm;
+          box-sizing: border-box;
+          padding: 10px;
+          border: 1px solid black; /* Optional: to visually see the ticket's border */
+        }
+         .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 48px;
+          }
+          .logo-container img {
+            border-radius: 50%;
+            width: 60px;
+            height: 62px;
+            object-fit: cover;
+          }
+        h2 {
+          font-size: 24px;
+          font-weight: 700;
+        }
+        .bill-item {
+          margin-bottom: 16px;
+          font-size: 18px;
+        }
+        .total {
+          font-size: 30px;
+          font-weight: 700;
+        }
+        .footer {
+          margin-top: 32px;
+          text-align: center;
+          font-size: 18px;
+          color: #6c757d;
+        }
+      </style>
     </head>
     <body>
-        <div class="receipt">
-            <div>                                 
-                <div class="header">
-                    <h1 class="title">${profile.schoolName}</h1>
-                    <p class="subtitle">2024/2025</p>
-                    <p class="subtitle"><strong>وصل استلام</strong></p>
-                </div>
-                <div class="content">
-                    <div class="row">
-                        <span>التاريخ: ${format(new Date(), "dd-MM-yyyy")}</span>
-                    </div>
-                    <div class="row">الاسم و اللقب: ${formData.name}</div>
-                    <div class="row">رسوم التسجيل: ${profile.registrationFee}</div>
-                    <div class="amount">الحالة: ${'مدفوع'}</div>
-                </div>
-            </div>
-            <div class="footer">
-                <p><strong>يرجى الاحتفاظ بالوصل</strong></p>
-                <div class="thank-you">شكراً لكم</div>
-            </div>
+      <div class="bill-container">
+        <div class="header">
+          <div class="logo-container">
+            <img src="${profile.photo}" alt="شعار المدرسة" />
+            <h2>${profile.schoolName}</h2>
+          </div>
         </div>
+        <div class="bill-item">
+          <label>الاسم:</label> <span>${studentName}</span>
+        </div>
+        <div class="bill-item">
+          <label>رسوم التسجيل:</label> <span>DZD ${fee}</span>
+        </div>
+        <hr style="margin: 24px 0;" />
+        <div style="display: flex; justify-content: space-between;">
+          <span class="total">الإجمالي:</span>
+          <span class="total">DZD ${fee}</span>
+        </div>
+        <div class="footer">شكراً!</div>
+      </div>
     </body>
     </html>
-    ` : `
-    <!DOCTYPE html>
-    <html lang="fr" dir="ltr">
+  ` : `
+    <html>
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Reçu de Paiement</title>
-        <style>
-            @page {
-                size: A4;
-                margin: 0;
-            }
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #f4f4f4;
-                direction: ltr;
-                height: 100%;
-            }
-            .receipt {
-                position: relative;
-                width: 100%;
-                height: 100vh;
-                background-color: white;
-                border: 1px solid #ddd;
-                padding: 20px;
-                box-sizing: border-box;
-            }
-            .header {
-                text-align: center;
-                margin-bottom: 10px;
-            }
-            .title {
-                font-size: 50px;
-                font-weight: bold;
-                margin: 0;
-            }
-            .subtitle {
-                font-size: 40px;
-                margin: 5px 0;
-            }
-            .content {
-                text-align: left;
-                font-size: 36px;
-                margin-bottom: 20px;
-            }
-            .row {
-                margin-bottom: 8px;
-            }
-            .amount {
-                border: 3px solid black;
-                padding: 25px;
-                text-align: center;
-                font-weight: bold;
-                font-size: 48px;
-                margin: 20px 0;
-            }
-            .footer {
-                border-top: 2px solid #ddd;
-                padding-top: 25px;
-                font-size: 36px;
-                text-align: center;
-                position: absolute;
-                bottom: 0;
-                width: calc(100% - 40px);
-            }
-            .thank-you {
-                font-size: 42px;
-                margin-top: 10px;
-            }
-        </style>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          width: 21cm;
+          height: 29.7cm;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .bill-container {
+          width: 8cm;
+          height: 21cm;
+          box-sizing: border-box;
+          padding: 10px;
+          border: 1px solid black; /* Optional: to visually see the ticket's border */
+        }
+        .header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 48px;
+        }
+        .logo-container img {
+          border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+        }
+        h2 {
+          font-size: 24px;
+          font-weight: 700;
+        }
+        .bill-item {
+          margin-bottom: 16px;
+          font-size: 18px;
+        }
+        .total {
+          font-size: 30px;
+          font-weight: 700;
+        }
+        .footer {
+          margin-top: 32px;
+          text-align: center;
+          font-size: 18px;
+          color: #6c757d;
+        }
+      </style>
     </head>
     <body>
-        <div class="receipt">
-            <div>
-                <div class="header">
-                    <h1 class="title">${profile.schoolName}</h1>
-                    <p class="subtitle">2024/2025</p>
-                    <p class="subtitle"><strong>Reçu de Paiement</strong></p>
-                </div>
-                <div class="content">
-                    <div class="row">
-                        <span>Date: ${format(new Date(), "dd-MM-yyyy")}</span>
-                    </div>
-                    <div class="row">Nom et Prénom: ${formData.name}</div>
-                    <div class="row">Frais d'inscription: ${profile.registrationFee}</div>
-                    <div class="amount">Statut: ${ 'Payé'}</div>
-                </div>
-            </div>
-            <div class="footer">
-                <p><strong>Veuillez conserver le reçu</strong></p>
-                <div class="thank-you">Merci</div>
-            </div>
+      <div class="bill-container">
+        <div class="header">
+          <div class="logo-container">
+            <img src="${profile.photo}" alt="School Logo" />
+            <h2>${profile.schoolName}</h2>
+          </div>
         </div>
+        <div class="bill-item">
+          <label>Nom:</label> <span>${studentName}</span>
+        </div>
+        <div class="bill-item">
+          <label>Frais d'inscription:</label> <span>DZD ${fee}</span>
+        </div>
+        <hr style="margin: 24px 0;" />
+        <div style="display: flex; justify-content: space-between;">
+          <span class="total">Total:</span>
+          <span class="total">DZD ${fee}</span>
+        </div>
+        <div class="footer">Merci!</div>
+      </div>
     </body>
     </html>
-    `;
-    const billContainer = document.createElement('div');
-
-    // Add some styles to position the bill at the top of the page
-    billContainer.style.position = 'absolute';
-    billContainer.style.top = '0';
-    billContainer.style.left = '0';
-    billContainer.style.width = '100%';
-    billContainer.style.zIndex = '9999';  // Ensure it's on top
-    billContainer.style.backgroundColor = 'white';  // Background for the bill
-    billContainer.style.padding = '20px';
-  
-    // Insert the bill HTML into the container
-    billContainer.innerHTML = billHtml;
-  
-    // Append the bill to the body of the current page
-    document.body.appendChild(billContainer);
-  
-    // Print the page after rendering the bill
-    window.focus();
-    window.print();
-  
-    // Remove the bill container after printing
-    window.onafterprint = () => {
-      document.body.removeChild(billContainer);
-    };
+  `;
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(billHtml);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.onafterprint = () => printWindow.close();
+      };
+    }
   };
-
 
   return (
     <>
