@@ -971,6 +971,7 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset,stud
     if (removed && Array.isArray(removed)) {
       for (const cls of removed) {
         const { group, id,  name,cs,active,amount,debt,sessionsLeft,sessionsToStudy,index} = cls;
+        console.log("removed",cls);
         
 await removeStudentFromClass({ group:cls.group, id:student.id,cs:cls.cs, 
   index:index, 

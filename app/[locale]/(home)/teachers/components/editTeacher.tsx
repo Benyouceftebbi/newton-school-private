@@ -196,7 +196,38 @@ const subjects = [
   
 
 ];
-
+const branchSubjectsMap = {
+  "متوسط": [ "Select Option","رياضيات", "علوم", "فيزياء", "العربية", "الإنجليزية", "الفرنسية","العلوم الاسلامية", "تاريخ وجغرافيا"],
+  "ابتدائي": [ "Select Option","رياضيات", "علوم", "فيزياء", "العربية", "الإنجليزية", "الفرنسية","العلوم الاسلامية", "تاريخ وجغرافيا"],
+  'high': [ "Select Option",'اسبانية',
+ 'اقتصاد',
+ 'الإنجليزية',
+ 'العربية',
+ 'العلوم الاسلامية',
+ 'الفرنسية',
+ 'المانية',
+ 'الهندسة الكهربائية',
+ 'ايطالية',
+ 'تاريخ وجغرافيا',
+ 'رياضيات',
+ 'علوم',
+ 'فلسفة',
+ 'فيزياء',
+ 'قانون',
+ 'محاسبة',
+ 'هندسة الطرائق',
+ 'هندسة مدنية'],
+ "لغات":['اسبانية','الإنجليزية','العربية','الفرنسية','المانية',
+ 'ايطالية'],
+ "جامعي":["Math",
+  "Algebre",
+  "Analyse",
+  "Physique",
+  "Chimie",
+  "Gestion",
+  "Informatique"],
+  "تحضيري":[ "Select Option","تحضيري"]
+};
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   const addSession = (groupIndex: number) => {
     const newGroups = [...getValues('classes')]
@@ -411,7 +442,7 @@ const [isOn, setIsOn] = React.useState(false); // Initialize with form value
                             </SelectTrigger>
             <SelectContent>
  
-            {subjects.map((subject) => (
+            {branchSubjectsMap[schoolType]?.map((subject) => (
                               <SelectItem key={subject} value={subject}   >
                                 {subject}
                               </SelectItem>

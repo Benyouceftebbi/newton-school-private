@@ -104,16 +104,6 @@ interface DataTableDemoProps {
       setTeacher(teacher)
       setOpenCard(true); // Open the sheet after setting the level
     };
-
-    const getMonthAbbreviation = (monthIndex: number) => {
-      const startDate = new Date(2024, 8); // September 2023 (month index 8)
-      const date = new Date(startDate.getFullYear(), startDate.getMonth() + monthIndex);
-      const monthAbbreviation = date.toLocaleString('en-GB', { month: "short" });
-      const yearAbbreviation = date.getFullYear().toString().substr(-2);
-      return `${monthAbbreviation}${yearAbbreviation}`;
-    };
-
-
     const {toast}=useToast()
     
     const columns: ColumnDef<any>[] = [
@@ -259,12 +249,63 @@ interface DataTableDemoProps {
   )
   const user = useUser()
 
+  const middleSchoolYears = ["1AM", "2AM", "3AM", "4AM"];
+  const highSchoolYears = ["1AS", "2AS", "3AS"];
+  const universitySchoolYears=["L1","L2","L3","M1"]
+  const priarySchoolYears=["1AP","2AP","3AP","4AP","5AP"]
+  const languageSchoolYears=["A1","A2","B1","B2","C1","C2"]
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-    
+  const orderedteachers = React.useMemo(() => {
+    // Ensure teachers is defined and is an array
+    if (!teachers || !Array.isArray(teachers)) {
+      return [];
+    }
+  console.log("mama");
+  
+    let filteredteachers = teachers;
+    let years = [];
+  
+    // Set the years array based on the filter
+    if (filter === "متوسط") {
+            // Filter teachers whose teacher.fields array does NOT include any element from years
+    filteredteachers = teachers.filter(teacher =>
+      teacher.year.every(field =>middleSchoolYears.includes(field))
+    );
+
+    } else if (filter === 'ثانوي') {
+      filteredteachers = teachers.filter(teacher =>
+        teacher.year.every(field =>highSchoolYears.includes(field))
+      );
+    } else if (filter === "جامعي") {
+      filteredteachers = teachers.filter(teacher =>
+        teacher.year.every(field =>universitySchoolYears.includes(field))
+      );
+    } else if (filter === "ابتدائي") {
+      filteredteachers = teachers.filter(teacher =>
+        teacher.year.every(field =>priarySchoolYears.includes(field))
+      );
+    } else if (filter === "لغات") {
+      filteredteachers = teachers.filter(teacher =>
+        teacher.year.every(field =>languageSchoolYears.includes(field))
+      );
+    } else if (filter === "تحضيري") {
+      filteredteachers = teachers.filter(teacher =>
+        teacher.year.every(field =>["تحضيري"].includes(field))
+      );
+    }
+    else{
+      filteredteachers;
+    }
+
+
+
+
+    return filteredteachers;
+  }, [teachers, filter]);
   const table = useReactTable({
-    data:teachers,
+    data:orderedteachers,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

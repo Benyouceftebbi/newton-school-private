@@ -21,12 +21,12 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
+
     CardHeader,
     CardTitle,
   } from "@/components/ui/card"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -92,7 +92,7 @@ interface DataTableDemoProps {
     const [openCard,setOpenCard]=React.useState(false)
     const t=useTranslations()
     const {students,setStudents,classes}=useData()
-    console.log('classes',classes);
+
     
     const orderedStudents = React.useMemo(() => {
       // Ensure students is defined and is an array
