@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
+//import { useData } from "@/context/admin/fetchDataContext";
 // Add a helper function to format currency
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('fr-DZ', { style: 'currency', currency: 'DZD' }).format(amount);
@@ -19,13 +19,17 @@ export function downloadInvoice(paymentData: any, id: string, titles: any[], wor
   doc.text('LOGO', 20, 30);
 
   // Add company information
+
+
+  /*
   doc.setFontSize(10);
   doc.setTextColor(100);
-  doc.text('Your Company Name', 20, 50);
-  doc.text('123 Business Street', 20, 55);
-  doc.text('City, Country, ZIP', 20, 60);
-  doc.text('Phone: +1234567890', 20, 65);
-  doc.text('Email: info@yourcompany.com', 20, 70);
+  doc.text(`${profile.schoolName}`, 20, 50);
+  doc.text(`${profile.address}`, 20, 55);
+  doc.text(`Phone: ${profile.phoneNumber}`, 20, 65);
+  doc.text(`Email: ${profile.email}`, 20, 70);
+*/
+
 
   // Add invoice details
   let paymentDate = new Date(paymentData.paymentDate);
