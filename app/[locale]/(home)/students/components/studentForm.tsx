@@ -1306,7 +1306,6 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset, cal
     }
   };
 
-
   return (
     <>
       {hasCompletedAllSteps && (

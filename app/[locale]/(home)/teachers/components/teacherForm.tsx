@@ -243,6 +243,38 @@ const paymentTypeOptions = {
   percentage: "percentage",
   hourly: "hourly"
 };
+const branchSubjectsMap = {
+  "متوسط": [ "Select Option","رياضيات", "علوم", "فيزياء", "العربية", "الإنجليزية", "الفرنسية","العلوم الاسلامية", "تاريخ وجغرافيا"],
+  "ابتدائي": [ "Select Option","رياضيات", "علوم", "فيزياء", "العربية", "الإنجليزية", "الفرنسية","العلوم الاسلامية", "تاريخ وجغرافيا"],
+  'high': [ "Select Option",'اسبانية',
+ 'اقتصاد',
+ 'الإنجليزية',
+ 'العربية',
+ 'العلوم الاسلامية',
+ 'الفرنسية',
+ 'المانية',
+ 'الهندسة الكهربائية',
+ 'ايطالية',
+ 'تاريخ وجغرافيا',
+ 'رياضيات',
+ 'علوم',
+ 'فلسفة',
+ 'فيزياء',
+ 'قانون',
+ 'محاسبة',
+ 'هندسة الطرائق',
+ 'هندسة مدنية'],
+ "لغات":['اسبانية','الإنجليزية','العربية','الفرنسية','المانية',
+ 'ايطالية'],
+ "جامعي":["Math",
+  "Algebre",
+  "Analyse",
+  "Physique",
+  "Chimie",
+  "Gestion",
+  "Informatique"],
+  "تحضيري":[ "Select Option","تحضيري"]
+};
 const [schoolType, setSchoolType] = React.useState('');
 const handleSchoolTypeChange = (type) => {
   setSchoolType(type);
@@ -434,7 +466,7 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
                             </SelectTrigger>
             <SelectContent>
  
-            {subjects.map((subject) => (
+            {branchSubjectsMap[schoolType]?.map((subject) => (
                               <SelectItem key={subject} value={subject}   >
                                 {subject}
                               </SelectItem>
@@ -895,7 +927,7 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
             </Step>
           )
         })}
-        <Footer formData={getValues()} form={form} isSubmitting={isSubmitting} reset={reset}/>
+        <Footer formData={getValues()} form={form} isSubmitting={isSubmitting} reset={reset} setSchoolType={setSchoolType}/>
 
       </Stepper>
 
@@ -954,9 +986,8 @@ function adjustStartDateToFirstSession(startDate: Date, sessions: Session[]): Da
   return adjustedDate;
 }
 
-const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset}) => {
+const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset,setSchoolType}) => {
   const user = useUser()
-
   const {
     nextStep,
     prevStep,
@@ -1041,6 +1072,7 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset}) =>
         classes: [],
         actionTrack:[]
       });
+      setSchoolType('')
     } catch (error) {
       console.error("Error adding Teacher:", error);
       toast({
