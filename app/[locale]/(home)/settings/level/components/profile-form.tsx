@@ -172,6 +172,22 @@ const handleFileUpload = (event) => {
             </FormItem>
           )}
         />
+
+<FormField
+          control={form.control}
+          name="NewCardFee"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('new-card-fee')}</FormLabel>
+              <FormControl>
+              <Input type="number" placeholder="350 DA" {...field} onChange={event => field.onChange(+event.target.value)} />
+              </FormControl>
+              <FormDescription>
+                {t('new-card-fee')} </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
        <FormField
   control={form.control}
   name="NumberOfClasses"
