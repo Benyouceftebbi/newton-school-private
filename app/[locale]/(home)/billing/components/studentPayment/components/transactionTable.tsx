@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { useState,useMemo, useEffect } from "react";
+import QrSeach from "./Qr-search"
 import {
   CaretSortIcon,
   ChevronDownIcon,
@@ -122,6 +123,7 @@ console.log('ffff',invoices );
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 const handlePrint=(data)=>{
+  const isRegistrationFee = !data.filtredclasses.some(cls => cls.group);
   const billHtml = profile.ticketLanguage === 'ar' ?`
   <!DOCTYPE html>
   <html lang="ar" dir="rtl">
@@ -223,6 +225,15 @@ const handlePrint=(data)=>{
                       <span>${format(new Date(), "dd-MM-yyyy")}</span>
                   </div>
                   <div class="row">الاسم و اللقب: ${data.student.student}</div>
+                  ${isRegistrationFee ? `
+                  ${data.filtredclasses.map(clss => `
+                  <div class="amount">المبلغ: ${clss.amountPaid}</div>
+                  <div class="row">حقوق التسجيل</div>
+
+                  `)}
+                  `:`
+                  
+              
                   <div class="amount">المبلغ: ${data.filtredclasses.reduce((total, cls) => total + cls.amountPaid, 0)}</div>
                   <table>
                       <thead>
@@ -249,6 +260,7 @@ const handlePrint=(data)=>{
                           `).join('')}
                       </tbody>
                   </table>
+                  `}
               </div>
           </div>
           <div class="footer">
@@ -354,11 +366,18 @@ const handlePrint=(data)=>{
                   <p class="subtitle">2024/2025</p>
                   <p class="subtitle"><strong>Reçu de Paiement</strong></p>
               </div>
-              <div class="content">
+                  <div class="content">
                   <div class="row">
                       <span>${format(new Date(), "dd-MM-yyyy")}</span>
                   </div>
                   <div class="row">Nom et Prénom: ${data.student.student}</div>
+                  ${isRegistrationFee ? `
+                  ${data.filtredclasses.map(clss => `
+                  <div class="amount">Montant: ${clss.amountPaid}</div>
+                  <div class="row">Frais d'inscription</div>
+
+                  `)}
+                  ` : `
                   <div class="amount">Montant: ${data.filtredclasses.reduce((total, cls) => total + cls.amountPaid, 0)}</div>
                   <table>
                       <thead>
@@ -384,6 +403,7 @@ const handlePrint=(data)=>{
                           `).join('')}
                       </tbody>
                   </table>
+                  `}
               </div>
           </div>
           <div class="footer">
@@ -520,6 +540,9 @@ const handlePrint=(data)=>{
             }
             className="max-w-sm"
           />
+              <QrSeach onStudentScanned={(name) => {
+        table.getColumn("student")?.setFilterValue(name);
+      }} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
