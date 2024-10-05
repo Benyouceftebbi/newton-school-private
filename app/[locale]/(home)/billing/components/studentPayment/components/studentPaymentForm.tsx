@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { arrayUnion, getDoc, updateDoc } from "firebase/firestore";
 import {useUser} from '@/lib/auth'
-
+import QrSeach from "./Qr-search"
 import {
   Form,
   FormControl,
@@ -264,61 +264,99 @@ const onSelected = (selectedStudent: any) => {
        
           case "student":
             return (
-              <Combobox
-      {...field}
-      open={studentModal}
-      setOpen={setStudentModal}
-      placeHolder={t('student')}
-      options={students}
-      value={getValues("student")?.student}
-      onSelected={(selectedValue) => {
-        const selectedStudent = students.find((student: any) => student.value === selectedValue);
-        console.log("dwqdqwdwq",selectedStudent,selectedValue,students);
+              <div className="flex items-center justify-between"> {/* Flex container for layout */}
+              
+              {/* Combobox for selecting students manually (left side) */}
+              <div className="flex-1"> {/* Allows the combobox to take most of the space */}
+                <Combobox
+                  {...field}
+                  open={studentModal}
+                  setOpen={setStudentModal}
+                  placeHolder={t('student')}
+                  options={students}
+                  value={getValues("student")?.student}
+                  onSelected={(selectedValue) => {
+                    const selectedStudent = students.find(
+                      (student: any) => student.value === selectedValue
+                    );
+                    if (selectedStudent) {
+                      const { value, label, ...rest } = selectedStudent;
+                      const updatedStudent: any = { ...rest };
         
-        if (selectedStudent) {
-          const { value, label, ...rest } = selectedStudent;
-          const updatedStudent: any = { ...rest };
-          onSelected(updatedStudent); // Added to handle the selected student
-          form.setValue(fieldName, {
-            value: selectedStudent.name,
-            label: selectedStudent.name,
-            id: selectedStudent.id,
-            student: selectedStudent.student,
-            nextPaymentDate: selectedStudent.nextPaymentDate,
-
-
-          });
-   
-          const classss =selectedStudent.classes
-          .map((clsUID) => {
-            // Find the corresponding class in the `classes` array
-            const selectedClass = classes.find(
-              (cls) => cls.id === clsUID.id && clsUID.sessionsLeft <= 0
-            );
+                      form.setValue(fieldName, {
+                        value: selectedStudent.name,
+                        label: selectedStudent.name,
+                        id: selectedStudent.id,
+                        student: selectedStudent.student,
+                        nextPaymentDate: selectedStudent.nextPaymentDate,
+                      });
         
-            // If the selected class is found, update the relevant information
-            if (selectedClass) {
-              return {
-                ...clsUID,
-                amountPerSession: clsUID.amount / clsUID.sessionsToStudy,
-                nextPaymentDate: selectedClass.nextPaymentDate,
-                
-              };
-            }
+                      const classss = selectedStudent.classes
+                        .map((clsUID) => {
+                          const selectedClass = classes.find(
+                            (cls) => cls.id === clsUID.id && clsUID.sessionsLeft <= 0
+                          );
+                          if (selectedClass) {
+                            return {
+                              ...clsUID,
+                              amountPerSession: clsUID.amount / selectedClass.numberOfSessions,
+                              nextPaymentDate: selectedClass.nextPaymentDate,
+                            };
+                          }
+                          return undefined;
+                        })
+                        .filter((clsUID) => clsUID !== undefined);
         
-            // If no matching class is found, return `undefined`
-            return undefined;
-          })
-          .filter((clsUID) => clsUID !== undefined); // Filter out undefined values
-          form.setValue('filtredclasses',classss)
-          form.setValue('initialClasses',classss)
-  
-
-
-          
-        }
-      }}
-    />
+                      form.setValue('filtredclasses', classss);
+                      form.setValue('initialClasses', classss);
+                    }
+                  }}
+                />
+              </div>
+        
+              {/* QR Search Component (right side) */}
+              <div className="ml-4"> {/* Adds spacing between the Combobox and QR search */}
+                <QrSeach
+                  onStudentScanned={(name) => {
+                    const scannedStudent = students.find(student => student.student === name);
+                    if (scannedStudent) {
+                      getValues("student")?.setFilterValue(name);
+        
+                      const { value, label, ...rest } = scannedStudent;
+                      const updatedStudent: any = { ...rest };
+        
+                      form.setValue(fieldName, {
+                        value: scannedStudent.name,
+                        label: scannedStudent.name,
+                        id: scannedStudent.id,
+                        student: scannedStudent.student,
+                        nextPaymentDate: scannedStudent.nextPaymentDate,
+                      });
+        
+                      const classss = scannedStudent.classes
+                        .map((clsUID) => {
+                          const selectedClass = classes.find(
+                            (cls) => cls.id === clsUID.id && clsUID.sessionsLeft <= 0
+                          );
+                          if (selectedClass) {
+                            return {
+                              ...clsUID,
+                              amountPerSession: clsUID.amount / selectedClass.numberOfSessions,
+                              nextPaymentDate: selectedClass.nextPaymentDate,
+                            };
+                          }
+                          return undefined;
+                        })
+                        .filter((clsUID) => clsUID !== undefined);
+        
+                      form.setValue('filtredclasses', classss);
+                      form.setValue('initialClasses', classss);
+                    }
+                  }} 
+                />
+              </div>
+              
+            </div>
             );
       case "status":
         return (
