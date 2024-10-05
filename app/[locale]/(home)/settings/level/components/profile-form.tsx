@@ -138,6 +138,9 @@ const handleFileUpload = (event) => {
   }
 }
   return (
+
+<div className="w-1/2">
+
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {/* School name field */}
@@ -489,5 +492,6 @@ const handleFileUpload = (event) => {
 >{t('update-profile-0')}</LoadingButton>
       </form>
     </Form>
+    </div>
   );
 }
