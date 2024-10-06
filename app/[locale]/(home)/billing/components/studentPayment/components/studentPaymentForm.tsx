@@ -282,7 +282,7 @@ const onSelected = (selectedStudent: any) => {
                     if (selectedStudent) {
                       const { value, label, ...rest } = selectedStudent;
                       const updatedStudent: any = { ...rest };
-        
+                      onSelected(updatedStudent)
                       form.setValue(fieldName, {
                         value: selectedStudent.name,
                         label: selectedStudent.name,
@@ -320,11 +320,11 @@ const onSelected = (selectedStudent: any) => {
                   onStudentScanned={(name) => {
                     const scannedStudent = students.find(student => student.student === name);
                     if (scannedStudent) {
-                      getValues("student")?.setFilterValue(name);
+                      
         
                       const { value, label, ...rest } = scannedStudent;
                       const updatedStudent: any = { ...rest };
-        
+                      onSelected(updatedStudent)
                       form.setValue(fieldName, {
                         value: scannedStudent.name,
                         label: scannedStudent.name,
@@ -427,8 +427,7 @@ const onSelected = (selectedStudent: any) => {
         };
   
         // Add payment transaction
-        await addPaymentTransaction(transaction, data.id,user);
-  
+        await addPaymentTransaction(transaction, data.student.id,user);
         // Update student payment info in Firestore
         const updatedStudents = await updateStudentPaymentInfo(item.id, data.student, item);
   
