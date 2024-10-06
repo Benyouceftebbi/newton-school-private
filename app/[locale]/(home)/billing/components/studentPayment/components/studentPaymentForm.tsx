@@ -866,7 +866,7 @@ const onSelected = (selectedStudent: any) => {
   placeholder={t('amount-paid')}
   onChange={(event) => {
     const amountPaid = parseFloat(event.target.value) ;
-    const numberOfSessionsLeft = amountPaid /option.amountPerSession; // Calculate the number of sessions left
+    const numberOfSessionsLeft = amountPaid /(option.amount/option.sessionsToStudy);
     const oldsessions=watch(`initialClasses.${index}.sessionsLeft`) ||0;
     
     form.setValue(`filtredclasses.${index}.amountPaid`, amountPaid);
