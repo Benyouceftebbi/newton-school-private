@@ -76,6 +76,7 @@ interface openModelProps {
 }
 const subjects =['علوم تجريبية', 'تقني رياضي', 'رياضيات', 'تسيير واقتصاد ', 'لغات اجنبية ', 'اداب وفلسفة']
 const classess = [
+  "تمهيدي",
   "تحضيري",
    "رياضيات",
    "علوم",
@@ -112,6 +113,7 @@ const steps: StepItem[] = [
 
 ];
 const years=[
+   "تمهيدي",
   "تحضيري",
   "لغات",
   "1AP",
@@ -479,6 +481,9 @@ if(["لغات"].includes(e)) {
 }
 if(["تحضيري"].includes(e)) {
   setValue("field", "تحضيري");
+}
+if(["تمهيدي"].includes(e)) {
+  setValue("field",   "تمهيدي");
 }
 
   }}
