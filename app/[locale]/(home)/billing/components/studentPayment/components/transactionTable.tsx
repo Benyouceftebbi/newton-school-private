@@ -91,20 +91,15 @@ export const TransactionDataTableDemo = () => {
   }, []);
 
   const handleExport = () => {
-    const exceldata = invoices?.flatMap((invoice: any) =>
-      invoice.transaction.map((trans: any) => ({
-        [`${t("transaction-id")}`]: invoice.id,
-        [`${t("student")}`]: invoice.student.student,
-        [`${t("amount")}`]: new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "DZD",
-        }).format(trans.amount),
-        [`${t("payment-date")}`]: format(trans.paymentDate.toDate(), "dd/MM/yyyy"),
-        [`${t("status")}`]: t(trans.status),
-        [`${t("from")}`]: trans.fromWho,
-        [`${t("transaction-type")}`]: trans.group || 'Registration Fee',
-      }))
-    );
+    const exceldata = transactionsData.map((transaction) => ({
+      [`${t("student")}`]: transaction.student.student,
+      [`${t("payment-date")}`]: format(new Date(transaction.paymentDate), "dd/MM/yyyy"),
+      [`${t("amount")}`]: new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "DZD",
+      }).format(transaction.amount),
+      [`${t("transaction-type")}`]: transaction.transactionType,
+    }));
     exportTableToExcel(t("students-payments-transactions-table"), exceldata);
   };
 
