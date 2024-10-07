@@ -112,7 +112,7 @@ export const TransactionDataTableDemo = () => {
       (Array.isArray(invoice?.transaction) ? invoice.transaction : []).map((trans: any) => ({
         ...invoice,
         ...trans,
-        transactionType: trans.group || 'Registration Fee'
+        transactionType: trans.group || trans.type ||'Registration Fee'
       }))
     ).sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
   }, [invoices]);
