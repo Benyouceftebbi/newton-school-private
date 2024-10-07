@@ -653,21 +653,21 @@ export default function Home() {
       
       `;
         
-          const printWindow = window.open('', '_blank');
+          // const printWindow = window.open('', '_blank');
           
-          if (printWindow) {
-            printWindow.document.open();
-            printWindow.document.write(billHtml);
-            printWindow.document.close();
+          // if (printWindow) {
+          //   printWindow.document.open();
+          //   printWindow.document.write(billHtml);
+          //   printWindow.document.close();
         
-            printWindow.onload = () => {
-              printWindow.focus();
-              printWindow.print();
-              printWindow.onafterprint = () => {
-                printWindow.close(); // Close the window after printing
-              };
-            };
-          } 
+          //   printWindow.onload = () => {
+          //     printWindow.focus();
+          //     printWindow.print();
+          //     printWindow.onafterprint = () => {
+          //       printWindow.close(); // Close the window after printing
+          //     };
+          //   };
+          // } 
       // // Clear state
       setCurrentClass(undefined);
       setCurrentClasses(undefined);
