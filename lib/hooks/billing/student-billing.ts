@@ -226,3 +226,73 @@ return updatedStudents
     console.error("Error updating student payment info:", error);
   }
 }
+
+export const addNewCardTransaction = async (transaction: any, studentID: string,user:any) => {
+  const month = getMonthInfo(transaction.paymentDate);
+  try {
+    // Validate studentID
+    if (!studentID) {
+        throw new Error("Student ID is required.");
+    }
+
+    // Reference to the specific student's invoice document
+    const transactionRef = doc(db, "Billing", "payments", "Invoices", studentID);
+
+    // Ensure transaction is not undefined
+    if (!transaction || !transaction) {
+        throw new Error("Transaction data is missing or malformed.");
+    }
+
+    // Update the document with arrayUnion
+    await updateDoc(transactionRef, {
+        transaction: arrayUnion(transaction), // Ensure transaction.transaction is an array
+    });
+
+      const analyticsRef = doc(db, "Billing", "analytics");
+      const analyticsDoc = await getDoc(analyticsRef);
+      if (!analyticsDoc.exists()) {
+        // Initialize the document with an array of month objects if it doesn't exist
+        const data = {
+          totalExpenses: 0,
+          totalIncome: transaction.amount,
+          data: months.map(monthh => ({
+            month: monthh.name,
+            expenses: 0,
+            income: transaction.amount
+          }))
+        };
+        await setDoc(analyticsRef, data);
+      } else {
+        // Retrieve the existing data array
+        const existingData = analyticsDoc.data()?.data || [];
+  
+        // Find the index of the current month in the array
+        const monthIndex = existingData.findIndex((m: any) => m.month === month.fullName);
+  
+        if (monthIndex !== -1) {
+          // Update the specific month's income
+          existingData[monthIndex].income += transaction.amount;
+        } else {
+          // Add a new entry if the month wasn't found
+          existingData.push({
+            month: month.fullName,
+            expenses: 0,
+            income: transaction.amount,
+          });
+        }
+     
+        // Update the totalIncome and the data array
+        await updateDoc(analyticsRef, {
+          totalIncome: increment(transaction.amount),
+          data: existingData
+        });
+      }
+  
+      console.log("Transaction successfully added to Firestore!");
+  
+      return transactionRef.id; // Return the ID of the document
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+      throw error; // Optionally re-throw the error to propagate it further if needed
+    }
+}

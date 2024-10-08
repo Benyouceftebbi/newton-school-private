@@ -138,6 +138,9 @@ const handleFileUpload = (event) => {
   }
 }
   return (
+
+<div className="w-1/2">
+
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {/* School name field */}
@@ -168,6 +171,22 @@ const handleFileUpload = (event) => {
               </FormControl>
               <FormDescription>
                 {t('this-is-the-registration-fee')} </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+<FormField
+          control={form.control}
+          name="NewCardFee"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('new-card-fee')}</FormLabel>
+              <FormControl>
+              <Input type="number" placeholder="350 DA" {...field} onChange={event => field.onChange(+event.target.value)} />
+              </FormControl>
+              <FormDescription>
+                {t('new-card-fee')} </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -473,5 +492,6 @@ const handleFileUpload = (event) => {
 >{t('update-profile-0')}</LoadingButton>
       </form>
     </Form>
+    </div>
   );
 }

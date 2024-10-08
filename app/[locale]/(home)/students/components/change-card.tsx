@@ -2,6 +2,8 @@
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/components/ui/use-toast"
 import {useUser} from '@/lib/auth'
+import { Timestamp } from 'firebase/firestore';
+
 import {
   Dialog,
   DialogClose,
@@ -48,6 +50,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import CalendarDatePicker from './date-picker';
 import { Separator } from '@/components/ui/separator';
 import QRCode from 'qrcode'
+import {addNewCardTransaction} from '@/lib/hooks/billing/student-billing'
 import { addStudent, addStudentToClass, changeStudentCard, changeStudentGroup, removeStudentFromClass, updateStudent } from '@/lib/hooks/students';
 import { LoadingButton } from '@/components/ui/loadingButton';
 import { format } from 'date-fns';
@@ -98,7 +101,7 @@ const isFirestoreId = (id) => {
     return firestoreIdRegex.test(id);
   };
 const ChangeCard: React.FC<openModelProps> = ({ setOpen, open,student }) => {
-    const {setStudents,teachers,classes,students}=useData()
+    const {setStudents,teachers,classes,students,profile}=useData()
 const t=useTranslations()
   const videoRef = useRef<HTMLVideoElement>(null);
   const highlightCodeOutlineRef = useRef<HTMLDivElement>(null);
@@ -244,7 +247,7 @@ const Footer: React.FC<FooterProps> = ({ formData, newId,student,setOpen}) => {
     }
   };
   const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const {setStudents,setClasses,students,classes}=useData()
+  const {setStudents,setClasses,students,classes,profile}=useData()
   const user = useUser()
   React.useEffect(() => {
     const fetchQrCode = async () => {
@@ -255,11 +258,24 @@ const Footer: React.FC<FooterProps> = ({ formData, newId,student,setOpen}) => {
     fetchQrCode();
   }, [newId]);
  const {toast}=useToast()
+ const currentDate = new Date();
+console.log('ahmed rolo',currentDate);
+
   const onSubmit = async () => {
+
+    const newCardPayment = {
+        amount: profile.NewCardFee,
+        type:'New Card',
+        paymentDate: currentDate,
+    }
 await changeStudentCard(student.id,newId,user)
+
+await addNewCardTransaction(newCardPayment,student.id,user)
 setStudents((prev: Student[]) => 
 prev.map(t => t.id === student.id ? { ...t, newId:newId } : t)
 );
+
+
 nextStep()
 
 

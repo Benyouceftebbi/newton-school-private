@@ -66,7 +66,7 @@ const calculateRate = () => {
   return rate.toFixed(2); // Return rate with two decimal places
 };
   return (
-<Card>
+<Card className='border-2 border-gray-200'>
 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
   <CardTitle className="text-sm font-normal">{t('total-revenue')}</CardTitle>
 </CardHeader>

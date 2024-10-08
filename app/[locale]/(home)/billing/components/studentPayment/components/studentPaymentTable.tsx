@@ -1,6 +1,6 @@
 "use client"
 import { format } from "date-fns";
-
+import QrSeach from "./Qr-search"
 import * as React from "react"
 import {
   CaretSortIcon,
@@ -140,30 +140,7 @@ export const StudentPaymentTable = () => {
         )
       },
     },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const student = row.original
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">{t('open-menu')}</span>
-                <DotsHorizontalIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => openEditSheet(student)}>
-                {t('view-student')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
-      },
-    },
+   
 ]
 
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -238,6 +215,10 @@ export const StudentPaymentTable = () => {
               }
               className="max-w-sm"
             />
+
+          <QrSeach onStudentScanned={(name) => {
+        table.getColumn("name")?.setFilterValue(name);
+      }} />
             <div className="flex items-center ml-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

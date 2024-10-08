@@ -1,515 +1,186 @@
-
 import { format } from "date-fns";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+//import { useData } from "@/context/admin/fetchDataContext";
+// Add a helper function to format currency
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('fr-DZ', { style: 'currency', currency: 'DZD' }).format(amount);
+};
 
-export function downloadInvoice(paymentData:any,id:string,titles:any[],words:any){
-    const doc = new jsPDF();
-  
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: 'school Erp',
-            styles: {
-              halign: 'left',
-              fontSize: 20,
-              textColor: '#ffffff',
-                
-            }
-          },
-          {
-            content: words.invoice,
-            styles: {
-              halign: 'right',
-              fontSize: 20,
-              textColor: '#ffffff'
-            }
-          }
-        ],
-      ],
-      theme: 'plain',
-      styles: {
-        fillColor: '#3366ff'
-      }
-    });
+export function downloadInvoice(paymentData: any, id: string, titles: any[], words: any) {
+  const doc = new jsPDF();
 
-
-    let paymentDate = new Date(paymentData.paymentDate);
-    if (isNaN(paymentDate.getTime())) {
-        console.error('Invalid paymentDate:', paymentData.paymentDate);
-        paymentDate = new Date(); // Fallback to current date or handle error as needed
-    }
-
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: `ReferenceID #${id}`
-            + `\nDate: ${format(paymentDate, 'dd/MM/yyyy')}`,
-            styles: {
-              halign: 'right'
-            }
-          }
-        ],
-      ],
-      theme: 'plain'
-    });
-  
-    autoTable(doc, {
-      body: [
-        [
-          {   
-            content: words.billedTo
-            +`\n${paymentData.toWho}`
-            +'\nBilling Address line 1'
-            +'\nBilling Address line 2'
-            +'\nZip code - City'
-            +'\nCountry',
-            styles: {
-              halign: 'left'
-            }
-          },
-          {
-    
-            content: words.shippingAddress
-            +`\n${paymentData.toWho}`
-            +'\nShipping Address line 1'
-            +'\nShipping Address line 2'
-            +'\nZip code - City'
-            +'\nCountry',
-            styles: {
-              halign: 'left'
-            }
-          },
-          {        
-            content:words.fromWho
-            +'\nSchool erp'
-            +'\nShipping Address line 1'
-            +'\nShipping Address line 2'
-            +'\nZip code - City'
-            +'\nCountry',
-            styles: {
-              halign: 'right'
-            }
-          }
-        ],
-      ],
-      theme: 'plain'
-    });
-  
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: words.amount,
-            styles: {
-              halign:'right',
-              fontSize: 14
-            }
-          }
-        ],
-        [
-          {
-            content: `DZD${paymentData.paymentAmount}`,
-            styles: {
-              halign:'right',
-              fontSize: 20,
-              textColor: '#3366ff'
-            }
-          }
-        ],
-        [
-          {
-            content: `Status: ${paymentData.status}`,
-            styles: {
-              halign:'right'
-            }
-          }
-        ]
-      ],
-      theme: 'plain'
-    });
-  
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: "Description",
-            styles: {
-              halign:'left',
-              fontSize: 14
-            }
-          }
-        ]
-      ],
-      theme: 'plain'
-    });
-    const valuesArray:any[] = Object.values(paymentData);
-    autoTable(doc, {
-      head: [titles],
-      body: [
-        valuesArray
-      ],
-      theme: 'striped',
-      headStyles:{
-        fillColor: '#343a40'
-      },
-      
-    });
-  
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: words.subtotal,
-            styles:{
-              halign:'right'
-            }
-          },
-          {
-            content: `DZD${paymentData.paymentAmount}`,
-            styles:{
-              halign:'right'
-            }
-          },
-        ],
-        [
-          {
-            content: words.totalTax,
-            styles:{
-              halign:'right'
-            }
-          },
-          {
-            content: 'DZD0',
-            styles:{
-              halign:'right'
-            }
-          },
-        ],
-        [
-          {
-            content:words.totalAmount,
-            styles:{
-              halign:'right'
-            }
-          },
-          {
-            content: `DZD${paymentData.paymentAmount}`,
-            styles:{
-              halign:'right'
-            }
-          },
-        ],
-      ],
-      theme: 'plain'
-    });
-  
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: "terms and notes",
-            styles: {
-              halign: 'left',
-              fontSize: 14
-            }
-          }
-        ],
-        [
-          {
-            content: 'orem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia'
-            +'molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum'
-            +'numquam blanditiis harum quisquam eius sed odit fugiat iusto fuga praesentium',
-            styles: {
-              halign: 'left'
-            }
-          }
-        ],
-      ],
-      theme: "plain"
-    });
-  
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: 'This is a centered footer',
-            styles: {
-              halign: 'center'
-            }
-          }
-        ]
-      ],
-      theme: "plain"
-    });
-  
-    return doc.save("invoice");
-  
-  }
-  export function generateBill(paymentData:any,id:string,titles:any[],words:any) {
-    const doc = new jsPDF();
-  
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: 'school Erp',
-            styles: {
-              halign: 'left',
-              fontSize: 20,
-              textColor: '#ffffff',
-                
-            }
-          },
-          {
-            content: words.invoice,
-            styles: {
-              halign: 'right',
-              fontSize: 20,
-              textColor: '#ffffff'
-            }
-          }
-        ],
-      ],
-      theme: 'plain',
-      styles: {
-        fillColor: '#3366ff'
-      }
-    });
-  
-    autoTable(doc, {
-      body: [
-        [
-          {
-            content: `ReferenceID #${id}`
-            +`\nDate: ${format(paymentData.paymentDate, 'dd/MM/yyyy')}`,
-            styles: {
-              halign: 'right'
-            }
-          }
-        ],
-      ],
-      theme: 'plain'
-    });
-  
-    autoTable(doc, {
-      body: [
-        [
-          {   
-            content: words.billedTo
-            +`\n${paymentData.parent}`
-            +'\nBilling Address line 1'
-            +'\nBilling Address line 2'
-            +'\nZip code - City'
-            +'\nCountry',
-            styles: {
-              halign: 'left'
-            }
-          },
-          {
-    
-            content: words.shippingAddress
-            +`\n${paymentData.parent}`
-            +'\nShipping Address line 1'
-            +'\nShipping Address line 2'
-            +'\nZip code - City'
-            +'\nCountry',
-            styles: {
-              halign: 'left'
-            }
-          },
-          {        
-            content:words.from
-            +'\nSchool erp'
-            +'\nShipping Address line 1'
-            +'\nShipping Address line 2'
-            +'\nZip code - City'
-            +'\nCountry',
-            styles: {
-              halign: 'right'
-            }
-          }
-        ],
-      ],
-      theme: 'plain'
-    });
-
-    const valuesArray:any[] = Object.values(paymentData);
-    autoTable(doc, {
-      head: [titles],
-      body: [
-        valuesArray
-      ],
-      theme: 'striped',
-      headStyles:{
-        fillColor: '#343a40'
-      },
+  // Set document properties
  
-      
-    });
-    autoTable(doc, {
-        head: [[
-            'Sep 23', 'Oct 23', 'Nov 23', 'Dec 23',
-            'Jan 24', 'Feb 24', 'Mar 24', 'Apr 24',
-            'May 24', 'Jun 24', 'Jul 24'
-          ]],
-        body: [
-          ["paid","paid","paid"],
-        ],
-        theme: 'grid',
-        headStyles:{
-          fillColor: '#E0E0E0',
-          textColor:'black'
-        },
-          didParseCell: function (data) {
-           
-                data.cell.styles.fontStyle='bold';
-                data.cell.styles.textColor='black';
-               
-            
-        }
-      });
-      autoTable(doc, {
 
-        body: [
-          [
-            {
-              content: '- - - - - - - - - - - - - - - - - - - - - - - - - - - - ',
-              styles: {
-                halign: 'center',
-                fontSize: 20,
-                textColor: 'black',
-                  
-              }
-            },
-          ],
-        ],
-        theme: 'plain',
-        styles: {
-         
-        }
-      });
-      autoTable(doc, {
+  // Add logo placeholder
+  doc.setFontSize(24);
+  doc.setTextColor(51, 102, 255);
+  doc.text('LOGO', 20, 30);
 
-        body: [
-          [
-            {
-              content: 'school Erp',
-              styles: {
-                halign: 'left',
-                fontSize: 20,
-                textColor: 'black',
-                  
-              }
-            },
-            {
-              content: words.invoice,
-              styles: {
-                halign: 'right',
-                fontSize: 20,
-                textColor: 'black'
-              }
-            }
-          ],
-        ],
-        theme: 'plain',
-        styles: {
-         
-        }
-      });
-    
-      autoTable(doc, {
-        body: [
-          [
-            {
-              content: `ReferenceID #${id}`
-              +`\nDate: ${format(paymentData.paymentDate, 'dd/MM/yyyy')}`,
-              styles: {
-                halign: 'right'
-              }
-            }
-          ],
-        ],
-        theme: 'plain'
-      });
-    
-      autoTable(doc, {
-        body: [
-          [
-            {   
-              content: words.billedTo
-              +`\n${paymentData.parent}`
-              +'\nBilling Address line 1'
-              +'\nBilling Address line 2'
-              +'\nZip code - City'
-              +'\nCountry',
-              styles: {
-                halign: 'left'
-              }
-            },
-            {
-      
-              content: words.shippingAddress
-              +`\n${paymentData.parent}`
-              +'\nShipping Address line 1'
-              +'\nShipping Address line 2'
-              +'\nZip code - City'
-              +'\nCountry',
-              styles: {
-                halign: 'left'
-              }
-            },
-            {        
-              content:words.from
-              +'\nSchool erp'
-              +'\nShipping Address line 1'
-              +'\nShipping Address line 2'
-              +'\nZip code - City'
-              +'\nCountry',
-              styles: {
-                halign: 'right'
-              }
-            }
-          ],
-        ],
-        theme: 'plain'
-      });
+  // Add company information
 
-      autoTable(doc, {
-        head: [titles],
-        body: [
-          valuesArray
-        ],
-        theme: 'striped',
-        headStyles:{
-          fillColor: '#343a40'
-        },
-   
-        
-      });
-      autoTable(doc, {
-          head: [[
-              'Sep 23', 'Oct 23', 'Nov 23', 'Dec 23',
-              'Jan 24', 'Feb 24', 'Mar 24', 'Apr 24',
-              'May 24', 'Jun 24', 'Jul 24'
-            ]],
-          body: [
-            ["paid","paid","paid"],
-          ],
-          theme: 'grid',
-          headStyles:{
-            fillColor: '#E0E0E0',
-            textColor:'black'
-          },
-            didParseCell: function (data) {
-             
-                  data.cell.styles.fontStyle='bold';
-                  data.cell.styles.textColor='black';
-                 
-              
-          }
-        });
-    return doc.save("invoice");
+
+  /*
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`${profile.schoolName}`, 20, 50);
+  doc.text(`${profile.address}`, 20, 55);
+  doc.text(`Phone: ${profile.phoneNumber}`, 20, 65);
+  doc.text(`Email: ${profile.email}`, 20, 70);
+*/
+
+
+  // Add invoice details
+  let paymentDate = new Date(paymentData.paymentDate);
+  if (isNaN(paymentDate.getTime())) {
+    console.error('Invalid paymentDate:', paymentData.paymentDate);
+    paymentDate = new Date();
+  }
+
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  doc.text('INVOICE', 140, 30);
+
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`Invoice Number: #${id}`, 140, 40);
+  doc.text(`Date: ${format(paymentDate, 'dd/MM/yyyy')}`, 140, 45);
+  doc.text(`Due Date: ${format(new Date(paymentDate.getTime() + 30 * 24 * 60 * 60 * 1000), 'dd/MM/yyyy')}`, 140, 50);
+
+  // Add client information (replace with actual client data)
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text('Bill To:', 20, 90);
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text('Client Name', 20, 100);
+  doc.text('Client Address', 20, 105);
+  doc.text('City, Country, ZIP', 20, 110);
+
+  // Add invoice items
+  autoTable(doc, {
+    startY: 120,
+    head: [titles],
+    body: [Object.values(paymentData)],
+    theme: 'striped',
+    headStyles: {
+      fillColor: [51, 102, 255],
+      textColor: 255,
+      fontSize: 10,
+      fontStyle: 'bold',
+    },
+    bodyStyles: {
+      fontSize: 9,
+    },
+    alternateRowStyles: {
+      fillColor: [245, 247, 250],
+    },
+  });
+
+  // Add total section
+  const finalY = (doc as any).lastAutoTable.finalY || 120;
+  autoTable(doc, {
+    startY: finalY + 10,
+    body: [
+      [{ content: words.subtotal, styles: { fontStyle: 'bold' } }, { content: formatCurrency(paymentData.paymentAmount), styles: { halign: 'right' } }],
+      [{ content: words.totalTax, styles: { fontStyle: 'bold' } }, { content: formatCurrency(0), styles: { halign: 'right' } }],
+      [{ content: words.totalAmount, styles: { fontStyle: 'bold' } }, { content: formatCurrency(paymentData.paymentAmount), styles: { halign: 'right', fontSize: 12, textColor: [51, 102, 255] } }],
+    ],
+    theme: 'plain',
+    styles: {
+      fontSize: 10,
+    },
+    columnStyles: {
+      0: { cellWidth: 150 },
+      1: { cellWidth: 'auto' },
+    },
+  });
+
+  // Add footer
+  const pageCount = doc.internal.getNumberOfPages();
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+    doc.text('Thank you for your business!', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 5, { align: 'center' });
+  }
+
+  return doc.save("invoice");
+}
+
+export function generateBill(paymentData: any, id: string, titles: any[], words: any) {
+  const doc = new jsPDF();
+
+  // Set document properties
+ 
+
+  // Add logo placeholder
+  doc.setFontSize(24);
+  doc.setTextColor(51, 102, 255);
+  doc.text('LOGO', 20, 30);
+
+  // Add company information
+  
+  // Add bill details
+  let paymentDate = new Date(paymentData.paymentDate);
+  if (isNaN(paymentDate.getTime())) {
+    console.error('Invalid paymentDate:', paymentData.paymentDate);
+    paymentDate = new Date();
+  }
+
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  doc.text('BILL', 140, 30);
+
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`Bill Number: #${id}`, 140, 40);
+  doc.text(`Date: ${format(paymentDate, 'dd/MM/yyyy')}`, 140, 45);
+
+  // Add bill items
+  autoTable(doc, {
+    startY: 80,
+    head: [titles],
+    body: [Object.values(paymentData)],
+    theme: 'striped',
+    headStyles: {
+      fillColor: [51, 102, 255],
+      textColor: 255,
+      fontSize: 10,
+      fontStyle: 'bold',
+    },
+    bodyStyles: {
+      fontSize: 9,
+    },
+    alternateRowStyles: {
+      fillColor: [245, 247, 250],
+    },
+  });
+
+  // Add separator
+  const finalY = (doc as any).lastAutoTable.finalY || 80;
+  doc.setDrawColor(200);
+  doc.line(20, finalY + 10, doc.internal.pageSize.width - 20, finalY + 10);
+
+  // Add total amount
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text('Total Amount:', 20, finalY + 20);
+  doc.setTextColor(51, 102, 255);
+  doc.setFontSize(14);
+  doc.text(formatCurrency(paymentData.paymentAmount), doc.internal.pageSize.width - 20, finalY + 20, { align: 'right' });
+
+  // Add footer
+  const pageCount = doc.internal.getNumberOfPages();
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+    doc.text('Thank you for your payment!', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 5, { align: 'center' });
+  }
+
+  return doc.save("bill");
 }
