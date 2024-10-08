@@ -17,7 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function AdminTrackRole() {
-  const { students, teachers, payoutsActionTrack } = useData()
+  const { students, teachers, payoutsActionTrack, classes } = useData()
   const [searchTerm, setSearchTerm] = useState("")
   const [date, setDate] = useState<Date>()
   const [actionType, setActionType] = useState("all")
@@ -30,6 +30,58 @@ export default function AdminTrackRole() {
     const teacherActionTracks = teachers?.flatMap(teacher => teacher.actionTrack) || []
     return [...payoutsActionTrack, ...studentActionTracks, ...teacherActionTracks]
   }, [students, teachers, payoutsActionTrack])
+
+  const formatAdditionalInfo = useCallback((action) => {
+    const info = action.additionalInfo || {}
+    const formatValue = (value) => value !== undefined ? value : 'n/d'
+
+    switch (action.action) {
+      case 'add new payment':
+        return `- Add new payment: From ${formatValue(info.fromWho)}, Amount: ${formatValue(info.transactionAmount)} DZD, Type: ${formatValue(info.typeofPayment)}`
+      case 'add new student':
+        return `- Add new student: ${formatValue(info.studentName)}`
+      case 'add student to a group':
+        const student = students.find(s => s.id === info.studentID)
+        const group = classes.find(g => g.id === info.classId)
+        return `- Add student to a group: ${student ? student.name : 'Unknown Student'} added to ${group ? group.name : 'Unknown Group'}`
+      case 'Remove a Student from a group':
+        const removedStudent = students.find(s => s.id === info.studentID)
+        const removedGroup = classes.find(g => g.id === info.classId)
+        return `- Remove a Student from a group: ${removedStudent ? removedStudent.name : 'Unknown Student'} removed from ${removedGroup ? removedGroup.name : 'Unknown Group'}`
+      case 'edit student':
+        return `- Edit student: New name - ${formatValue(info.studentName)}`
+      case 'reimbursment':
+        const reimbursedStudent = students.find(s => s.id === info.studentId)
+        return `- Reimbursement: ${reimbursedStudent ? reimbursedStudent.name : 'Unknown Student'}, New sessions: ${formatValue(info.NewnumberOfsessionTostudy)}, New debt: ${formatValue(info.newDebt)} DZD`
+      case 'Change student Card':
+        const cardChangedStudent = students.find(s => s.id === info.studentID)
+        return `- Change student Card: ${cardChangedStudent ? cardChangedStudent.name : 'Unknown Student'}`
+      case 'Change Profile Picture':
+        const pictureChangedStudent = students.find(s => s.id === info.studentID)
+        return `- Change Profile Picture: ${pictureChangedStudent ? pictureChangedStudent.name : 'Unknown Student'}`
+      case 'Change the Student group':
+        const movedStudent = students.find(s => s.id === info.studentID)
+        const newGroup = classes.find(g => g.id === info.classId)
+        return `- Change the Student group: ${movedStudent ? movedStudent.name : 'Unknown Student'} moved to ${newGroup ? newGroup.name : 'Unknown Group'}`
+      case 'add new teacher':
+        return `- Add new teacher: ${formatValue(info.teacherName)}`
+      case 'Add new group/groups':
+        const teacher = teachers.find(t => t.id === info.teacherId)
+        return `- Add new group: ${formatValue(info.groupName)} for teacher ${teacher ? teacher.name : 'Unknown Teacher'}`
+      case 'Edit teacher':
+        const editedTeacher = teachers.find(t => t.id === info.teacherId)
+        return `- Edit teacher: ${editedTeacher ? editedTeacher.name : 'Unknown Teacher'}`
+      case 'add new Salary':
+        const paidTeacher = teachers.find(t => t.id === info.Teacherid)
+        return `- Add new Salary: ${paidTeacher ? paidTeacher.name : 'Unknown Teacher'}, Amount: ${formatValue(info.transactionAmount?.paymentAmount)} DZD`
+      case 'Update group/groups info':
+        const updatedTeacher = teachers.find(t => t.id === info.teacherId)
+        const updatedGroup = classes.find(g => g.id === info.groupId)
+        return `- Update group info: ${updatedGroup ? updatedGroup.name : 'Unknown Group'} for teacher ${updatedTeacher ? updatedTeacher.name : 'Unknown Teacher'}`
+      default:
+        return JSON.stringify(info)
+    }
+  }, [students, teachers, classes])
 
   const filterActions = useCallback((actions) => {
     return actions.filter(action => {
@@ -64,12 +116,12 @@ export default function AdminTrackRole() {
 
   const handleExport = useCallback(() => {
     const csvContent = [
-      ["Type", "Additional Info", "User ID", "Date & Time"],
+      ["Type", "Additional Info", "User Type", "Date & Time"],
       ...filteredActions.map(action => [
         action.action,
-        JSON.stringify(action.additionalInfo),
-        action.userId,
-        new Date(action.timestamp).toLocaleString()
+        formatAdditionalInfo(action),
+        action.userType,
+        format(new Date(action.timestamp), 'dd-MM-yyyy HH:mm:ss')
       ])
     ].map(e => e.join(",")).join("\n")
 
@@ -84,7 +136,7 @@ export default function AdminTrackRole() {
       link.click()
       document.body.removeChild(link)
     }
-  }, [filteredActions])
+  }, [filteredActions, formatAdditionalInfo])
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">
@@ -95,6 +147,7 @@ export default function AdminTrackRole() {
             <TooltipTrigger asChild>
               <Button onClick={handleExport} variant="outline" size="icon">
                 <Download className="h-4 w-4" />
+                <span className="sr-only">Export to CSV</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -146,10 +199,11 @@ export default function AdminTrackRole() {
                 <ChevronDown className="ml-auto h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px]">
-              {actionTypes.map((type) => (
+            <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto">
+              <DropdownMenuItem onClick={() => setActionType("all")}>All Types</DropdownMenuItem>
+              {actionTypes.filter(type => type !== "all").map((type) => (
                 <DropdownMenuItem key={type} onClick={() => setActionType(type)}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  {type}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -188,9 +242,8 @@ export default function AdminTrackRole() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[150px]">Type</TableHead>
-                  <TableHead className="w-[200px]">Additional Info</TableHead>
+                  <TableHead className="w-[400px]">Additional Info</TableHead>
                   <TableHead className="w-[100px]">User Type</TableHead>
-                  <TableHead className="w-[100px]">User ID</TableHead>
                   <TableHead className="w-[200px]">Date & Time</TableHead>
                 </TableRow>
               </TableHeader>
@@ -198,29 +251,28 @@ export default function AdminTrackRole() {
                 {paginatedActions.map((action, index) => (
                   <TableRow key={index}>
                     <TableCell>
-                      <Badge variant="secondary">{action.action}</Badge>
+                      <Badge variant="secondary">{action.action || 'n/d'}</Badge>
                     </TableCell>
-                    <TableCell className="max-w-[200px]">
+                    <TableCell className="max-w-[400px]">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger className="truncate block w-full text-left">
-                          {JSON.stringify(action.additionalInfo).slice(0, 50)}
-                            {JSON.stringify(action.additionalInfo).length > 50 ? '...' : ''}
+                            {formatAdditionalInfo(action)}
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" className="max-w-[300px] break-words">
-                            <p>{JSON.stringify(action.additionalInfo, null, 2)}</p>
+                          <TooltipContent side="bottom" className="max-w-[400px] break-words">
+                            <p>{formatAdditionalInfo(action)}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{action.userType}</Badge>
+                      <Badge variant="outline">{action.userType || 'n/d'}</Badge>
                     </TableCell>
-                    <TableCell>{action.userId}</TableCell>
-                    <TableCell>{new Date(action.timestamp).toLocaleString()}</TableCell>
+                    <TableCell>{action.timestamp ? format(new Date(action.timestamp), 'dd-MM-yyyy HH:mm:ss') : 'n/d'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
+            
             </Table>
           </ScrollArea>
           <div className="mt-6 flex items-center justify-between">
