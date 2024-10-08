@@ -292,20 +292,20 @@ const onSelected = (selectedStudent: any) => {
                       });
         
                       const classss = selectedStudent.classes
-                        .map((clsUID) => {
-                          const selectedClass = classes.find(
-                            (cls) => cls.id === clsUID.id && clsUID.sessionsLeft <= 0
-                          );
-                          if (selectedClass) {
-                            return {
-                              ...clsUID,
-                              amountPerSession: clsUID.amount / selectedClass.numberOfSessions,
-                              nextPaymentDate: selectedClass.nextPaymentDate,
-                            };
-                          }
-                          return undefined;
-                        })
-                        .filter((clsUID) => clsUID !== undefined);
+                      .map((clsUID) => {
+                        const selectedClass = classes.find(
+                          (cls) => cls.id === clsUID.id && (clsUID.sessionsLeft <= 0 || clsUID.debt > 0)
+                        );
+                        if (selectedClass) {
+                          return {
+                            ...clsUID,
+                            amountPerSession: clsUID.amount / selectedClass.numberOfSessions,
+                            nextPaymentDate: selectedClass.nextPaymentDate,
+                          };
+                        }
+                        return undefined;
+                      })
+                      .filter((clsUID) => clsUID !== undefined);
         
                       form.setValue('filtredclasses', classss);
                       form.setValue('initialClasses', classss);

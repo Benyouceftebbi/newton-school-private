@@ -190,57 +190,76 @@ export const ArchiveDataTable = ({teacher}) => {
     return monthObj ? MonthOfYear.indexOf(monthObj) + 1 : null; // Return month index (1-based)
   };
   const dates = useMemo(() => {
-    
-    const selectedYear = new Date().getFullYear(); // Assuming the current year is used, can be dynamic
+    const selectedYear = new Date().getFullYear(); // Can be dynamic
     const monthIndex = getMonthIndex(month); // Get the selected month index
     const formattedMonth = monthIndex < 10 ? `0${monthIndex}` : monthIndex.toString(); // Format to "MM"
   
     const allDates = selectedGroup
-      ? Array.from(new Set(
-          teacherClasses
-            .filter(group => group.group === selectedGroup)
-            .flatMap(cls => 
-              cls.groups.flatMap(group => {
-                const generatedDates = getNextFourDates(group.day, group.start, group.end, month);
+      ? Array.from(
+          new Map( // Use a Map to retain only the version with time if duplicates exist
+            teacherClasses
+              .filter((group) => group.group === selectedGroup)
+              .flatMap((cls) =>
+                cls.groups.flatMap((group) => {
+                  const generatedDates = getNextFourDates(
+                    group.day,
+                    group.start,
+                    group.end,
+                    month
+                  );
   
-                const attendanceDates = cls.Attendance 
-                  ? Object.keys(cls.Attendance).filter(dateKey => {
-                      // Extract the year and month from the attendance date in "yyyy-MM" format
+                  const attendanceDates = cls.Attendance
+                    ? Object.keys(cls.Attendance).filter((dateKey) => {
+                        const [yearStr, monthStr] = dateKey.split('-');
+                        const attendanceMonth = `${yearStr}-${monthStr}`;
+                        return attendanceMonth === `${selectedYear}-${formattedMonth}`;
+                      })
+                    : [];
+  
+                  // Merge both generated and attendance dates
+                  const mergedDates = [...generatedDates, ...attendanceDates];
+                  return mergedDates;
+                })
+              )
+              // Sort by date to ensure the version with time comes after the one without time
+              .sort((a, b) => a.localeCompare(b))
+              // Use a Map to keep only the last occurrence of a date, which will be the one with time
+              .map(date => [date.split('-').slice(0, 3).join('-'), date]) // Map "yyyy-mm-dd" to the full date
+          ).values() // Get only the values (full date) from the Map
+        )
+      : Array.from(
+          new Map(
+            teacherClasses.flatMap((cls) =>
+              cls.groups.flatMap((group) => {
+                const generatedDates = getNextFourDates(
+                  group.day,
+                  group.start,
+                  group.end,
+                  month
+                );
+  
+                const attendanceDates = cls.Attendance
+                  ? Object.keys(cls.Attendance).filter((dateKey) => {
                       const [yearStr, monthStr] = dateKey.split('-');
                       const attendanceMonth = `${yearStr}-${monthStr}`;
-  
-                      // Compare the attendance month to the selected month (e.g., "2022-10")
                       return attendanceMonth === `${selectedYear}-${formattedMonth}`;
                     })
                   : [];
   
-                return [...generatedDates, ...attendanceDates]; // Merge generated and attendance dates
+                // Merge both generated and attendance dates
+                const mergedDates = [...generatedDates, ...attendanceDates];
+                return mergedDates;
               })
             )
-        ))
-      : Array.from(new Set(
-          teacherClasses.flatMap(cls => 
-            cls.groups.flatMap(group => {
-              const generatedDates = getNextFourDates(group.day, group.start, group.end, month);
-  
-              const attendanceDates = cls.Attendance 
-                ? Object.keys(cls.Attendance).filter(dateKey => {
-                    const [yearStr, monthStr] = dateKey.split('-');
-                    const attendanceMonth = `${yearStr}-${monthStr}`;
-  
-                    return attendanceMonth === `${selectedYear}-${formattedMonth}`;
-                })
-                : [];
-  
-              return [...generatedDates, ...attendanceDates];
-            })
-          )
-        ));
+            .sort((a, b) => a.localeCompare(b))
+            .map(date => [date.split('-').slice(0, 3).join('-'), date]) // Map "yyyy-mm-dd" to the full date
+          ).values() // Get only the values (full date) from the Map
+        );
   
     // Sort dates chronologically
     return allDates.sort((a, b) => {
-      const dateA = new Date(a.split('-')[0]);
-      const dateB = new Date(b.split('-')[0]);
+      const dateA = new Date(a.split('-').slice(0, 3).join('-')); // Compare only the "yyyy-mm-dd" part for sorting
+      const dateB = new Date(b.split('-').slice(0, 3).join('-'));
       return dateA.getTime() - dateB.getTime();
     });
   }, [teacherClasses, selectedGroup, month]);
@@ -273,11 +292,11 @@ export const ArchiveDataTable = ({teacher}) => {
           const handleChange = async (event: string) => {
             const newStatus = event;
            const cls=classes.find(c=>c.id===row.original.classId);
-            if(event==="present" && currentStatus==='Absent'){
+            if(event==="present" && (currentStatus==='Absent'|| currentStatus==='Non-Existent')){
               await addStudent({index:student.index,id:student.id,name:student.name,group:student.group,status:currentStatus},row.original.classId,formattedDate,{...cls,start:new Date(),end:new Date(),attendanceId:formattedDate,classId:cls.id})
             
             }
-             if(event==="Absent" && currentStatus==='present'){
+             if(event==="Absent" &&( currentStatus==='present'|| currentStatus==='Non-Existent')){
               await removeStudent({index:student.index,id:student.id,name:student.name,group:student.group,status:currentStatus},row.original.classId,formattedDate,{...cls,start:new Date(),end:new Date(),attendanceId:formattedDate,classId:cls.id})
 
             }
@@ -294,7 +313,7 @@ export const ArchiveDataTable = ({teacher}) => {
                   
                       <SelectItem  value="present"> <CheckIcon className="ml-5 w-5 h-5 text-green-500" /></SelectItem>
                       <SelectItem  value="Absent">          <XIcon className="ml-5 w-5 h-5 text-red-500" /></SelectItem>
-                      <SelectItem  value='Non-Existent'>          Non-Existent</SelectItem>
+                      <SelectItem  value='Non-Existent'>Non-Existent</SelectItem>
                   </SelectContent>
                 </Select>
           );
@@ -343,8 +362,8 @@ const user=useData()
   });
   const headerGroups = useMemo(() => table.getHeaderGroups(), [table,selectedGroup,classes,month]);
 
-  // Memoize the rows
-  const rows = useMemo(() => table.getRowModel().rows, [table,selectedGroup,classes,month]);
+  // Memoize the rowsconst rows = useMemo(() => table.getPaginationRowModel().rows, [table]);
+  const rows = table.getPaginationRowModel().rows; 
 
   const handleTabClick = (value: string | number) => {
     if (value === 'All') {
@@ -521,8 +540,7 @@ const user=useData()
     }
   
   }
-  console.log('Can previous page:', table.getCanPreviousPage());
-  console.log('Can next page:', table.getCanNextPage());
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
