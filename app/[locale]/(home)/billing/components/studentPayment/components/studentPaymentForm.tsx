@@ -419,22 +419,19 @@ const onSelected = (selectedStudent: any) => {
         const transaction = {
           paymentDate: data.paymentDate,
           amount: item.amountPaid,
-          debt: Math.abs(item.debt - item.amountPaid),
+          debt: item.debt - item.amountPaid,
           monthlypayment: data.monthlypayment,
           subject: item.subject,
           group: item.group,
           nextPaymentDate: item.nextPaymentDate,
         };
-  
-        // Add payment transaction
+       // Add payment transaction
         await addPaymentTransaction(transaction, data.student.id,user);
         // Update student payment info in Firestore
         const updatedStudents = await updateStudentPaymentInfo(item.id, data.student, item);
-  
         // Update student's financial records
         await updateStudentFinance(transaction.paymentDate, transaction.nextPaymentDate, transaction.debt, data.student.id);
-  
-        // Update local state with the modified class and student data
+      // Update local state with the modified class and student data
         setClasses((prev) =>
           prev.map((cls) =>
             cls.id === item.id ? { ...cls, students: updatedStudents } : cls
@@ -734,10 +731,8 @@ const onSelected = (selectedStudent: any) => {
 </body>
 </html>
 `;
-      
-  
-      // Open a new window and print the bill
-      const printWindow = window.open('', '_blank');
+
+     const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.document.open();
         printWindow.document.write(billHtml);
@@ -746,7 +741,7 @@ const onSelected = (selectedStudent: any) => {
           printWindow.focus();
           printWindow.print();
         };
-      }
+      };
       reset({paymentDate:new Date(),filtredclasses:[]})
     } catch (error) {
       console.error('Error processing transaction:', error);

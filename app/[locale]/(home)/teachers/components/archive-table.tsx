@@ -337,7 +337,7 @@ const user=useData()
     initialState: {
       pagination: {
         pageIndex: 0,
-        pageSize: 3,
+        pageSize: 50,
       },
     },
   });
@@ -521,7 +521,8 @@ const user=useData()
     }
   
   }
-
+  console.log('Can previous page:', table.getCanPreviousPage());
+  console.log('Can next page:', table.getCanNextPage());
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
