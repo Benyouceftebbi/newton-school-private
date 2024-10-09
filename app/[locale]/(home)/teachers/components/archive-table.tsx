@@ -18,11 +18,12 @@ import {
 import { useData } from "@/context/admin/fetchDataContext";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslations } from "next-intl";
-import { addDays, endOfMonth, format, startOfMonth } from "date-fns";
+import { addDays, endOfMonth, format, parse, startOfMonth } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addStudentFromAttendance, removeStudentFromAttendance } from "@/lib/hooks/calendar";
 import { addPaymentTransaction } from "@/lib/hooks/billing/student-billing";
 import generatePDF from './teacherReview'
+import Combobox from "@/components/ui/comboBox";
 
 
 export type studentAttandance = {
@@ -40,14 +41,24 @@ const getStatusIcon = (status: string) => {
  
 };
 
-const getNextFourDates = (day: string, startTime: string, endTime: string) => {
+const getNextFourDates = (day: string, startTime: string, endTime: string, selectedMonth: string) => {
   const daysOfWeek = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
   const targetDay = daysOfWeek[day];
   const dates = [];
-  let currentDate = startOfMonth(new Date());
-  const lastDate = endOfMonth(new Date());
 
-  while (currentDate <= lastDate && dates.length < 4) {
+  // Parse the selected month and year to create a Date object for the first day of that month
+  const currentYear = new Date().getFullYear();
+
+  // Construct a date string in 'yyyy-MM' format using `format` and `parse`
+  const selectedMonthDate = parse(`${selectedMonth}-${currentYear}`, 'MMMM-yyyy', new Date()); // Parses 'September-2024'
+  
+  const startOfSelectedMonth = startOfMonth(selectedMonthDate); // First day of the selected month
+  const endOfSelectedMonth = endOfMonth(selectedMonthDate); // Last day of the selected month
+
+  let currentDate = startOfSelectedMonth;
+
+  // Iterate through the selected month to find the next 4 occurrences of the target day
+  while (currentDate <= endOfSelectedMonth && dates.length < 4) {
     if (currentDate.getDay() === targetDay) {
       const dateStr = format(currentDate, 'yyyy-MM-dd');
       dates.push(`${dateStr}-${startTime}-${endTime}`);
@@ -57,13 +68,13 @@ const getNextFourDates = (day: string, startTime: string, endTime: string) => {
 
   return dates;
 };
-const generateTableData = (classes: any[]) => {
+const generateTableData = (classes: any[],month:string) => {
   const tableData = [];
 
   classes.forEach(cls => {
     cls.groups.forEach(group => {
       // Generate the next 4 dates for the group
-      const generatedDates = getNextFourDates(group.day, group.start, group.end);
+      const generatedDates = getNextFourDates(group.day, group.start, group.end,month);
 
       // Extract dates from the attendance records
       const attendanceDates = cls.Attendance 
@@ -73,33 +84,41 @@ const generateTableData = (classes: any[]) => {
       // Merge generated dates and attendance dates (to avoid duplicates)
       const allDates = Array.from(new Set([...generatedDates, ...attendanceDates]));
 
+
       // Process students and attendance
       cls.students.forEach(student => {
         if (student.group === cls.group) {
           const row = {
-            id:student.id,
+            id: student.id,
             index: student.index,
             group: cls.group,
             name: student.name,
-            classId:cls.id,
+            classId: cls.id,
             ...allDates.reduce((acc, date) => {
               const [yearStrOnly, monthStr, dayStr] = date.split('-');
               const dateKey = `${yearStrOnly}-${monthStr}-${dayStr}`;
-
+       
               const attendanceEntry = cls.Attendance?.[dateKey];
-
-
-              if (attendanceEntry) {
-                const isPresent = attendanceEntry.attendanceList.some(att => att.id === student.id);
-                acc[date] = isPresent ? 'present' : 'Absent';
+         
+              // Check if the student was added after the current date
+              if (student.addedAt && new Date(student.addedAt.toDate()) > new Date(dateKey)) {
+               
+           
+                acc[date] = 'Non-Existent';
               } else {
-                acc[date] = 'Absent'; // Mark as Absent if no attendance record exists for that date
+                if (attendanceEntry) {
+                  const isPresent = attendanceEntry.attendanceList.some(att => att.id === student.id);
+                  acc[date] = isPresent ? 'present' : 'Absent';
+                } else {
+                  acc[date] = 'Absent';// Mark as Absent if no attendance record exists for that date
+                }
               }
 
               return acc;
             }, {} as { [key: string]: string })
           };
 
+              
           tableData.push(row);
         }
       });
@@ -110,44 +129,140 @@ const generateTableData = (classes: any[]) => {
 };
 
 export const ArchiveDataTable = ({teacher}) => {
-  const {students,classes,setClasses,setStudents,teachers}=useData()
+  const {classes,setClasses,setStudents}=useData()
   const teacherClasses = useMemo(() => classes.filter((cls) => cls.teacherUID === teacher.id), [classes, teacher.id]);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-
+  const [monthModal,setMonthModal]=useState(false)
+  const [month,setMonth]=useState(new Date().toLocaleString('en-US', { month: 'long' }))
+  const t=useTranslations()
+  const MonthOfYear = [
+    {
+      value: "January",
+      label: t('january'),
+    },
+    {
+      value: "February",
+      label: t('february'),
+    },
+    {
+      value: "March",
+      label: t('march'),
+    },
+    {
+      value: "April",
+      label: t('april'),
+    },
+    {
+      value: "May",
+      label: t('may'),
+    },
+    {
+      value: "June",
+      label: "June",
+    },
+    {
+      value: "July",
+      label: t('july'),
+    },
+    {
+      value: "August",
+      label: t('august'),
+    },
+    {
+      value: "September",
+      label: t('september'),
+    },
+    {
+      value: "October",
+      label: t('october'),
+    },
+    {
+      value: "November",
+      label: t('november'),
+    },
+    {
+      value: "December",
+      label: t('december'),
+    },
+  ];
+  const getMonthIndex = (monthName: string) => {
+    const monthObj = MonthOfYear.find(month => month.value === monthName);
+    return monthObj ? MonthOfYear.indexOf(monthObj) + 1 : null; // Return month index (1-based)
+  };
   const dates = useMemo(() => {
+    const selectedYear = new Date().getFullYear(); // Can be dynamic
+    const monthIndex = getMonthIndex(month); // Get the selected month index
+    const formattedMonth = monthIndex < 10 ? `0${monthIndex}` : monthIndex.toString(); // Format to "MM"
+  
     const allDates = selectedGroup
-      ? Array.from(new Set(
-          teacherClasses
-            .filter(group => group.group === selectedGroup)
-            .flatMap(cls => 
-              cls.groups.flatMap(group => {
-                const generatedDates = getNextFourDates(group.day, group.start, group.end);
-                const attendanceDates = cls.Attendance 
-                  ? Object.keys(cls.Attendance) // Extract dates from the Attendance subcollection
+      ? Array.from(
+          new Map( // Use a Map to retain only the version with time if duplicates exist
+            teacherClasses
+              .filter((group) => group.group === selectedGroup)
+              .flatMap((cls) =>
+                cls.groups.flatMap((group) => {
+                  const generatedDates = getNextFourDates(
+                    group.day,
+                    group.start,
+                    group.end,
+                    month
+                  );
+  
+                  const attendanceDates = cls.Attendance
+                    ? Object.keys(cls.Attendance).filter((dateKey) => {
+                        const [yearStr, monthStr] = dateKey.split('-');
+                        const attendanceMonth = `${yearStr}-${monthStr}`;
+                        return attendanceMonth === `${selectedYear}-${formattedMonth}`;
+                      })
+                    : [];
+  
+                  // Merge both generated and attendance dates
+                  const mergedDates = [...generatedDates, ...attendanceDates];
+                  return mergedDates;
+                })
+              )
+              // Sort by date to ensure the version with time comes after the one without time
+              .sort((a, b) => a.localeCompare(b))
+              // Use a Map to keep only the last occurrence of a date, which will be the one with time
+              .map(date => [date.split('-').slice(0, 3).join('-'), date]) // Map "yyyy-mm-dd" to the full date
+          ).values() // Get only the values (full date) from the Map
+        )
+      : Array.from(
+          new Map(
+            teacherClasses.flatMap((cls) =>
+              cls.groups.flatMap((group) => {
+                const generatedDates = getNextFourDates(
+                  group.day,
+                  group.start,
+                  group.end,
+                  month
+                );
+  
+                const attendanceDates = cls.Attendance
+                  ? Object.keys(cls.Attendance).filter((dateKey) => {
+                      const [yearStr, monthStr] = dateKey.split('-');
+                      const attendanceMonth = `${yearStr}-${monthStr}`;
+                      return attendanceMonth === `${selectedYear}-${formattedMonth}`;
+                    })
                   : [];
-                return [...generatedDates, ...attendanceDates]; // Merge generated and attendance dates
+  
+                // Merge both generated and attendance dates
+                const mergedDates = [...generatedDates, ...attendanceDates];
+                return mergedDates;
               })
             )
-        ))
-      : Array.from(new Set(
-          teacherClasses.flatMap(cls => 
-            cls.groups.flatMap(group => {
-              const generatedDates = getNextFourDates(group.day, group.start, group.end);
-              const attendanceDates = cls.Attendance 
-                ? Object.keys(cls.Attendance) // Extract dates from the Attendance subcollection
-                : [];
-              return [...generatedDates, ...attendanceDates]; // Merge generated and attendance dates
-            })
-          )
-        ));
+            .sort((a, b) => a.localeCompare(b))
+            .map(date => [date.split('-').slice(0, 3).join('-'), date]) // Map "yyyy-mm-dd" to the full date
+          ).values() // Get only the values (full date) from the Map
+        );
   
     // Sort dates chronologically
     return allDates.sort((a, b) => {
-      const dateA = new Date(a.split('-')[0]);
-      const dateB = new Date(b.split('-')[0]);
+      const dateA = new Date(a.split('-').slice(0, 3).join('-')); // Compare only the "yyyy-mm-dd" part for sorting
+      const dateB = new Date(b.split('-').slice(0, 3).join('-'));
       return dateA.getTime() - dateB.getTime();
     });
-  }, [teacherClasses, selectedGroup]);
+  }, [teacherClasses, selectedGroup, month]);
   const generateColumns = (dates: string[]): ColumnDef<any>[] => {
     const baseColumns: ColumnDef<any>[] = [
       {
@@ -173,17 +288,15 @@ export const ArchiveDataTable = ({teacher}) => {
           const [year, month, day] = date.split('-');
           const formattedDate = `${year}-${month}-${day}`;
           const currentStatus = row.getValue(date);
-          console.log("status",currentStatus);
-          
           const student=row.original
           const handleChange = async (event: string) => {
             const newStatus = event;
            const cls=classes.find(c=>c.id===row.original.classId);
-            if(event==="present" && currentStatus==='Absent'){
+            if(event==="present" && (currentStatus==='Absent'|| currentStatus==='Non-Existent')){
               await addStudent({index:student.index,id:student.id,name:student.name,group:student.group,status:currentStatus},row.original.classId,formattedDate,{...cls,start:new Date(),end:new Date(),attendanceId:formattedDate,classId:cls.id})
             
             }
-             if(event==="Absent" && currentStatus==='present'){
+             if(event==="Absent" &&( currentStatus==='present'|| currentStatus==='Non-Existent')){
               await removeStudent({index:student.index,id:student.id,name:student.name,group:student.group,status:currentStatus},row.original.classId,formattedDate,{...cls,start:new Date(),end:new Date(),attendanceId:formattedDate,classId:cls.id})
 
             }
@@ -197,10 +310,10 @@ export const ArchiveDataTable = ({teacher}) => {
                     <SelectValue placeholder="Select year" />
                   </SelectTrigger>
                   <SelectContent            className="ml-5 w-20 border rounded p-1">
-  
+                  
                       <SelectItem  value="present"> <CheckIcon className="ml-5 w-5 h-5 text-green-500" /></SelectItem>
                       <SelectItem  value="Absent">          <XIcon className="ml-5 w-5 h-5 text-red-500" /></SelectItem>
-  
+                      <SelectItem  value='Non-Existent'>Non-Existent</SelectItem>
                   </SelectContent>
                 </Select>
           );
@@ -210,14 +323,14 @@ export const ArchiveDataTable = ({teacher}) => {
   
     return baseColumns;
   };
-  const data = useMemo(() => generateTableData(teacherClasses), [teacherClasses,classes]);
-  const columns = useMemo(() => generateColumns(dates), [dates,selectedGroup,classes]);
+  const data = useMemo(() => generateTableData(teacherClasses,month), [teacherClasses,classes,month]);
+  const columns = useMemo(() => generateColumns(dates), [dates,selectedGroup,classes,month]);
   const filteredData = useMemo(() => 
     selectedGroup ? data.filter(item => item.group === selectedGroup) : data, 
-    [data, selectedGroup,classes]
+    [data, selectedGroup,classes,month]
   );
 
-
+const user=useData()
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -243,15 +356,15 @@ export const ArchiveDataTable = ({teacher}) => {
     initialState: {
       pagination: {
         pageIndex: 0,
-        pageSize: 3,
+        pageSize: 50,
       },
     },
   });
-  const headerGroups = useMemo(() => table.getHeaderGroups(), [table,selectedGroup,classes]);
+  const headerGroups = useMemo(() => table.getHeaderGroups(), [table,selectedGroup,classes,month]);
 
-  // Memoize the rows
-  const rows = useMemo(() => table.getRowModel().rows, [table,selectedGroup,classes]);
-  const t=useTranslations()
+  // Memoize the rowsconst rows = useMemo(() => table.getPaginationRowModel().rows, [table]);
+  const rows = table.getPaginationRowModel().rows; 
+
   const handleTabClick = (value: string | number) => {
     if (value === 'All') {
       setSelectedGroup(null); // Show all data if "All" is selected
@@ -421,12 +534,13 @@ export const ArchiveDataTable = ({teacher}) => {
         return updatedClasses;
       });
 
-      await addPaymentTransaction({paymentDate:new Date(),amount:student.amount},student.id)
+      await addPaymentTransaction({paymentDate:new Date(),amount:student.amount},student.id,user)
     }
     } catch (error) {
     }
   
   }
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
@@ -465,12 +579,31 @@ export const ArchiveDataTable = ({teacher}) => {
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm "
+        
         /> */}
-          <Button variant="outline" className="flex items-center gap-2 hover:bg-muted/50 transition-colors" onClick={()=>generatePDF({teacher:teacher.name,group:'',subject:'',year:''},filteredData,dates)}>
-            <DownloadIcon className="w-5 h-5" />
-            Export
-          </Button>
+       <div className="flex items-center space-x-4">
+  <Combobox
+    className="max-w-sm"
+    open={monthModal}
+    setOpen={setMonthModal}
+    placeHolder={t('month')}
+    options={MonthOfYear}
+    value={month}
+    onSelected={(selectedValue) => {
+      setMonth(selectedValue);
+    }} 
+  />
+  
+  <Button 
+    variant="outline" 
+    className="flex items-center gap-2 hover:bg-muted/50 transition-colors"
+    onClick={() => generatePDF({ teacher: teacher.name, group: '', subject: '', year: '' }, filteredData, dates)}
+  >
+    <DownloadIcon className="w-5 h-5" />
+    Export
+  </Button>
+</div>
+         
         </div>
         <Table>
       <TableHeader>

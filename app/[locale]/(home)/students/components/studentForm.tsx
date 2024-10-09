@@ -120,6 +120,7 @@ const steps: StepItem[] = [
 ];
 
 const years=[
+  "تمهيدي",
   "تحضيري",
   "لغات",
   "1AP",
@@ -661,6 +662,9 @@ if(["لغات"].includes(e)) {
 if(["تحضيري"].includes(e)) {
   setValue("field", "تحضيري");
 }
+if(["تمهيدي"].includes(e)) {
+  setValue("field", "تمهيدي");
+}
 
   }}
    defaultValue={field.value}
@@ -806,7 +810,7 @@ if(["تحضيري"].includes(e)) {
   <div className="w-full h-full">
      <ScrollArea className="h-[400px]">
     <Table>
-      <TableCaption>        <Button type='button' size="sm" variant="ghost" className="gap-1 w-full"  onClick={()=>appendClass({id:'',name:'',subject:'',group:'',cs:'false',amount:0})}>
+      <TableCaption>        <Button type='button' size="sm" variant="ghost" className="gap-1 w-full"  onClick={()=>appendClass({id:'',name:'',subject:'',group:'',cs:'false',amount:0,addedAt:new Date()})}>
                       <PlusCircle className="h-3.5 w-3.5" />
                       {t('add group')}</Button></TableCaption>
       <TableHeader>
@@ -1306,7 +1310,6 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset, cal
       };
     }
   };
-
 
   return (
     <>

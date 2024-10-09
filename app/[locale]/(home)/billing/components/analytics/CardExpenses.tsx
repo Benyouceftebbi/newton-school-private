@@ -83,8 +83,15 @@ type FinancialItemProps = {
   isPositive: boolean
 }
 
+
 function FinancialItem({ title, amount, percentage, icon: Icon, isPositive }: FinancialItemProps) {
   const colorClass = isPositive ? 'text-green-500' : 'text-red-500'
+
+
+
+function FinancialItem({ title, amount, percentage, icon: Icon, isPositive }: FinancialItemProps) {
+  const colorClass = isPositive ? 'text-green-500' : 'text-red-500'
+
 
   return (
     <div className="flex items-center justify-between">
@@ -98,4 +105,8 @@ function FinancialItem({ title, amount, percentage, icon: Icon, isPositive }: Fi
       </div>
     </div>
   )
+
 }
+
+}
+
