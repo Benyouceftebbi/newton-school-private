@@ -183,4 +183,6 @@ export function generateBill(paymentData: any, id: string, titles: any[], words:
   }
 
   return doc.save("bill");
+
 }
+

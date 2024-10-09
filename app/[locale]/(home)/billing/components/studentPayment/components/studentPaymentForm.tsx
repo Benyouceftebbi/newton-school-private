@@ -264,10 +264,8 @@ const onSelected = (selectedStudent: any) => {
        
           case "student":
             return (
-              <div className="flex items-center justify-between"> {/* Flex container for layout */}
-              
-              {/* Combobox for selecting students manually (left side) */}
-              <div className="flex-1"> {/* Allows the combobox to take most of the space */}
+              <div className="flex items-center justify-between"> 
+              <div className="flex-1">
                 <Combobox
                   {...field}
                   open={studentModal}
@@ -292,11 +290,12 @@ const onSelected = (selectedStudent: any) => {
                       });
         
                       const classss = selectedStudent.classes
-                        .map((clsUID) => {
-                          const selectedClass = classes.find(
-                            (cls) => cls.id === clsUID.id && clsUID.sessionsLeft <= 0
-                          );
-                          if (selectedClass) {
+
+                      .map((clsUID) => {
+                        const selectedClass = classes.find(
+                          (cls) => cls.id === clsUID.id && (clsUID.sessionsLeft <= 0 || clsUID.debt > 0)
+                        );
+                        if (selectedClass) {
                             return {
                               ...clsUID,
                               amountPerSession: clsUID.amount / selectedClass.numberOfSessions,
@@ -310,11 +309,10 @@ const onSelected = (selectedStudent: any) => {
                       form.setValue('filtredclasses', classss);
                       form.setValue('initialClasses', classss);
                     }
-                  }}
+                  }} 
                 />
               </div>
         
-              {/* QR Search Component (right side) */}
               <div className="ml-4"> {/* Adds spacing between the Combobox and QR search */}
                 <QrSeach
                   onStudentScanned={(name) => {
@@ -336,7 +334,7 @@ const onSelected = (selectedStudent: any) => {
                       const classss = scannedStudent.classes
                         .map((clsUID) => {
                           const selectedClass = classes.find(
-                            (cls) => cls.id === clsUID.id && clsUID.sessionsLeft <= 0
+                            (cls) => cls.id === clsUID.id && (clsUID.sessionsLeft <= 0 || clsUID.debt > 0)
                           );
                           if (selectedClass) {
                             return {
@@ -425,16 +423,18 @@ const onSelected = (selectedStudent: any) => {
           group: item.group,
           nextPaymentDate: item.nextPaymentDate,
         };
+
+       // Add payment transaction
+
   
         // Add payment transaction
+
         await addPaymentTransaction(transaction, data.student.id,user);
         // Update student payment info in Firestore
         const updatedStudents = await updateStudentPaymentInfo(item.id, data.student, item);
-  
         // Update student's financial records
         await updateStudentFinance(transaction.paymentDate, transaction.nextPaymentDate, transaction.debt, data.student.id);
-  
-        // Update local state with the modified class and student data
+      // Update local state with the modified class and student data
         setClasses((prev) =>
           prev.map((cls) =>
             cls.id === item.id ? { ...cls, students: updatedStudents } : cls
@@ -450,7 +450,7 @@ const onSelected = (selectedStudent: any) => {
                       ? {
                           ...cls,
                           nextPaymentDate: item.nextPaymentDate,
-                          debt: Math.abs(item.debt - item.amountPaid),
+                          debt: item.debt - item.amountPaid,
                           sessionsLeft: item.sessionsLeft,
                           sessionsToStudy:cls.numberOfSessions
                         }
@@ -581,7 +581,7 @@ const onSelected = (selectedStudent: any) => {
                             <tr>
                                 <td>${cls.group}</td>
                                 <td>${cls.subject}</td>
-                                <td>${Math.abs(cls.debt - cls.amountPaid)}</td>
+                                <td>${cls.debt - cls.amountPaid}</td>
                                 <td>${cls.sessionsLeft}</td>
                                 <td>${cls.amountPaid}</td>
                                 <td>${format(new Date(cls.nextPaymentDate), "dd-MM-yyyy")}</td>
@@ -716,7 +716,7 @@ const onSelected = (selectedStudent: any) => {
                             <tr>
                                 <td>${cls.group}</td>
                                 <td>${cls.subject}</td>
-                                <td>${Math.abs(cls.debt - cls.amountPaid)}</td>
+                                <td>${cls.debt - cls.amountPaid}</td>
                                 <td>${cls.sessionsLeft}</td>
                                 <td>${cls.amountPaid}</td>
                                 <td>${format(new Date(cls.nextPaymentDate), "dd-MM-yyyy")}</td>
@@ -734,10 +734,8 @@ const onSelected = (selectedStudent: any) => {
 </body>
 </html>
 `;
-      
-  
-      // Open a new window and print the bill
-      const printWindow = window.open('', '_blank');
+
+     const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.document.open();
         printWindow.document.write(billHtml);
@@ -746,7 +744,7 @@ const onSelected = (selectedStudent: any) => {
           printWindow.focus();
           printWindow.print();
         };
-      }
+      };
       reset({paymentDate:new Date(),filtredclasses:[]})
     } catch (error) {
       console.error('Error processing transaction:', error);

@@ -27,6 +27,7 @@ export const SubjectsSchema = z.array(
     sessionsLeft: z.number(),
     sessionsToStudy: z.number(),
     subject: z.string(),
+    addedAt:z.date()
   })
 );
 

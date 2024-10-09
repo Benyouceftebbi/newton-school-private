@@ -58,6 +58,8 @@ import { useData } from '@/context/admin/fetchDataContext';
 import { useTranslations } from 'next-intl';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {useUser} from '@/lib/auth'
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/firebase/firebase-config';
 interface FooterProps {
   formData: Student;
   student: Student;
@@ -74,6 +76,7 @@ interface openModelProps {
 }
 const subjects =['علوم تجريبية', 'تقني رياضي', 'رياضيات', 'تسيير واقتصاد ', 'لغات اجنبية ', 'اداب وفلسفة']
 const classess = [
+  "تمهيدي",
   "تحضيري",
    "رياضيات",
    "علوم",
@@ -110,6 +113,7 @@ const steps: StepItem[] = [
 
 ];
 const years=[
+   "تمهيدي",
   "تحضيري",
   "لغات",
   "1AP",
@@ -329,6 +333,36 @@ if(selectedClassId.paymentType==='monthly'){
       reader.readAsDataURL(file)
     }
   }
+  const updateStudentAddedAtAndSave = async (classes, studentsOfSchool) => {
+    // Loop through each class
+    for (const cls of classes) {
+      let studentsUpdated = false;
+  
+      // Loop through students within each class
+      cls.students.forEach(student => {
+        if (!student.addedAt) {
+          // Find the corresponding student in the 'studentsOfSchool' array
+          const matchingStudent = studentsOfSchool.find(schoolStudent => schoolStudent.id === student.id);
+  
+          if (matchingStudent) {
+            // Add the 'addedAt' field with 'lastPaymentDate'
+            student.addedAt = matchingStudent.lastPaymentDate;
+            studentsUpdated = true;
+          }
+        }
+      });
+  
+      // If any student was updated, proceed to update the Firestore document
+      if (studentsUpdated) {
+        try {
+          await updateDoc(doc(db,"Groups",cls.id), { students: cls.students });
+          console.log(`Updated students for class ID: ${cls.id}`);
+        } catch (error) {
+          console.error(`Error updating class ID: ${cls.id}`, error);
+        }
+      }
+    }
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen} >
  <DialogContent className="sm:max-w-[1300px]">
@@ -340,7 +374,9 @@ if(selectedClassId.paymentType==='monthly'){
             Add your Student here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-
+        {/* <Button onClick={()=>updateStudentAddedAtAndSave(classes,students)} type='button'>
+          EDITSTUDENTS
+        </Button> */}
         <div className="flex w-full flex-col gap-4">
 
       <Stepper initialStep={0} steps={steps} >
@@ -445,6 +481,9 @@ if(["لغات"].includes(e)) {
 }
 if(["تحضيري"].includes(e)) {
   setValue("field", "تحضيري");
+}
+if(["تمهيدي"].includes(e)) {
+  setValue("field",   "تمهيدي");
 }
 
   }}
@@ -589,7 +628,7 @@ if(["تحضيري"].includes(e)) {
   <div className="w-full h-full">
      <ScrollArea className="h-[400px]">
     <Table>
-      <TableCaption>        <Button type='button' size="sm" variant="ghost" className="gap-1 w-full"  onClick={()=>appendClass({id:'',name:'',subject:'',group:'',cs:'false',amount:0})}>
+      <TableCaption>        <Button type='button' size="sm" variant="ghost" className="gap-1 w-full"  onClick={()=>appendClass({id:'',name:'',subject:'',group:'',cs:'false',amount:0,addedAt:new Date()})}>
                       <PlusCircle className="h-3.5 w-3.5" />
                       {t('add group')}</Button></TableCaption>
       <TableHeader>
@@ -883,7 +922,7 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset,stud
     // Add students to classes
     if (added && Array.isArray(added)) {
       for (const cls of added) {
-        const { group, id,  name,cs,active,amount,debt,sessionsLeft,sessionsToStudy} = cls;
+        const { group, id,  name,cs,active,amount,debt,sessionsLeft,sessionsToStudy,addedAt} = cls;
         const studentCount = await getStudentCount(id);
         const index = studentCount ;
    
@@ -899,7 +938,8 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset,stud
             amount:amount,
             debt:debt,
             ...(active && { nextPaymentDate: cls?.nextPaymentDate }),
-            sessionsToStudy:sessionsToStudy}]
+            sessionsToStudy:sessionsToStudy,
+            addedAt:addedAt}]
         } : cls
       )
     );
@@ -921,7 +961,8 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset,stud
     amount:amount,
     debt:debt,
     ...(active && { nextPaymentDate: cls?.nextPaymentDate }),
-    sessionsToStudy:sessionsToStudy},cls.id,student.id,user)
+    sessionsToStudy:sessionsToStudy,
+    addedAt:cls.addedAt},cls.id,student.id,user)
         
 
         
@@ -935,6 +976,7 @@ const Footer: React.FC<FooterProps> = ({ formData, form, isSubmitting,reset,stud
     if (removed && Array.isArray(removed)) {
       for (const cls of removed) {
         const { group, id,  name,cs,active,amount,debt,sessionsLeft,sessionsToStudy,index} = cls;
+        console.log("removed",cls);
         
 await removeStudentFromClass({ group:cls.group, id:student.id,cs:cls.cs, 
   index:index, 
@@ -944,7 +986,7 @@ await removeStudentFromClass({ group:cls.group, id:student.id,cs:cls.cs,
   amount:amount,
   debt:debt,
   ...(active && { nextPaymentDate: cls?.nextPaymentDate }),
-  sessionsToStudy:sessionsToStudy},student.id,cls.id,user)
+  sessionsToStudy:sessionsToStudy,addedAt:cls.addedAt},student.id,cls.id,user)
 
 
        setClasses((prevClasses: any[]) => 
@@ -970,14 +1012,14 @@ std.id === student.id ? {
 
          // Change groups for specific students
     if (updated && Array.isArray(updated)) {
-      for (const { id,group,cs } of updated) {
+      for (const { id,group,cs,amount } of updated) {
  
    const classToUpdate = classes.find((cls: { id: any; }) => cls.id === id);
 
 
    const updatedStudents = classToUpdate.students.map((std: { id: any; }) =>
     std.id === student.id
-      ? { ...std, cs:cs }  // Update the student with the new group
+      ? { ...std, cs:cs,amount:amount }  // Update the student with the new group
       : std
   );
 

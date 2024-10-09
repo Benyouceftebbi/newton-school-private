@@ -55,16 +55,18 @@ const [attendance, setAttendance] = useState(() => {
   if(selectedEvent.paymentType==='monthly'){
     selectedEvent.students.forEach(student => {
       const isStudentInAttendance = updatedAttendanceList.some(attendanceEntry => attendanceEntry.id === student.id);
-  
-      // If the student is not in attendance list, add them with status "absent"
+
       if (!isStudentInAttendance) {
-        updatedAttendanceList.push({
-          id: student.id,
-          name: student.name,
-          group: selectedEvent.group,  // Assuming group is available in selectedEvent
-          status: "absent",
-          index: student.index,  // Add the new index (length + 1)
-        });
+        if (student.addedAt && new Date(student.addedAt.toDate()) < new Date(selectedEvent.start)) {
+          updatedAttendanceList.push({
+            id: student.id,
+            name: student.name,
+            group: selectedEvent.group,  // Assuming group is available in selectedEvent
+            status: "absent",
+            index: student.index,  // Add the new index (length + 1)
+          });
+        } 
+        
       }
     });
   }else{
@@ -73,6 +75,7 @@ const [attendance, setAttendance] = useState(() => {
   
       // If the student is not in attendance list, add them with status "absent"
       if (!isStudentInAttendance) {
+        if (student.addedAt && new Date(student.addedAt.toDate()) < new Date(selectedEvent.start)) {
         updatedAttendanceList.push({
           id: student.id,
           name: student.name,
@@ -82,6 +85,7 @@ const [attendance, setAttendance] = useState(() => {
           amount:student.amount,
           index: student.index,  // Add the new index (length + 1)
         });
+      }
       }
     });
   }

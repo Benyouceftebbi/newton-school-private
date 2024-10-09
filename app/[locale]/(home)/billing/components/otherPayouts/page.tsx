@@ -14,58 +14,18 @@ import PaymentForm from "./components/paymentForm"
 import { Overview } from "./components/area-chart"
 import { useTranslations } from "next-intl"
 import { useData } from "@/context/admin/fetchDataContext";
-import { Button } from "@/components/ui/button"
-import { db } from "@/firebase/firebase-config";
-
-import { addDoc, collection, doc, getDoc, increment, setDoc, updateDoc, arrayUnion} from "firebase/firestore";
 
  function Payouts() {
-
-
-  
   const t=useTranslations()
-  const { analytics,classes,students}= useData()
+  const { analytics}= useData()
   const total_expences = analytics.totalExpenses
   const total_payouts =(total_expences-analytics.teachersExpenses)
 const pecentage = (((total_expences-analytics.teachersExpenses)/total_expences)*100).toFixed(2)
-
-
-
-const updateStudentAddedAtAndSave = async (classes, studentsOfSchool) => {
-  // Loop through each class
-  for (const cls of classes) {
-    let studentsUpdated = false;
-
-    // Loop through students within each class
-    cls.students.forEach(student => {
-      if (!student.addedAt) {
-        // Find the corresponding student in the 'studentsOfSchool' array
-        const matchingStudent = studentsOfSchool.find(schoolStudent => schoolStudent.id === student.id);
-
-        if (matchingStudent) {
-          // Add the 'addedAt' field with 'lastPaymentDate'
-          student.addedAt = matchingStudent.lastPaymentDate;
-          studentsUpdated = true;
-        }
-      }
-    });
-
-    // If any student was updated, proceed to update the Firestore document
-    if (studentsUpdated) {
-      try {
-        await updateDoc(doc(db,"Groups",cls.id), { students: cls.students });
-        console.log(`Updated students for class ID: ${cls.id}`);
-      } catch (error) {
-        console.error(`Error updating class ID: ${cls.id}`, error);
-      }
-    }
-  }
-};
   return (
   
 
     <div className="flex flex-row min-h-screen w-full flex-col ">
-<Button type="submit" onClick={() => updateStudentAddedAtAndSave(classes, students)}></Button>
+
       <div className="flex flex-col sm:gap-4 sm:py-4 ">
    
         <div className="grid flex items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
