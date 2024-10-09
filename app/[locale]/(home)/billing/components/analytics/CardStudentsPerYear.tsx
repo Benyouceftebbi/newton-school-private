@@ -61,4 +61,8 @@ export default function NetProfitSummary() {
       </CardContent>
     </Card>
   )
+
 }
+
+}
+

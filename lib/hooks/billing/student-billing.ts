@@ -295,4 +295,8 @@ export const addNewCardTransaction = async (transaction: any, studentID: string,
       console.error("Error adding transaction:", error);
       throw error; // Optionally re-throw the error to propagate it further if needed
     }
+
 }
+
+}
+

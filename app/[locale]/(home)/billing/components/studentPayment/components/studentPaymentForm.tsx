@@ -292,6 +292,7 @@ const onSelected = (selectedStudent: any) => {
                       });
         
                       const classss = selectedStudent.classes
+
                       .map((clsUID) => {
                         const selectedClass = classes.find(
                           (cls) => cls.id === clsUID.id && (clsUID.sessionsLeft <= 0 || clsUID.debt > 0)
@@ -306,6 +307,22 @@ const onSelected = (selectedStudent: any) => {
                         return undefined;
                       })
                       .filter((clsUID) => clsUID !== undefined);
+
+                        .map((clsUID) => {
+                          const selectedClass = classes.find(
+                            (cls) => cls.id === clsUID.id && clsUID.sessionsLeft <= 0
+                          );
+                          if (selectedClass) {
+                            return {
+                              ...clsUID,
+                              amountPerSession: clsUID.amount / selectedClass.numberOfSessions,
+                              nextPaymentDate: selectedClass.nextPaymentDate,
+                            };
+                          }
+                          return undefined;
+                        })
+                        .filter((clsUID) => clsUID !== undefined);
+
         
                       form.setValue('filtredclasses', classss);
                       form.setValue('initialClasses', classss);
@@ -425,7 +442,12 @@ const onSelected = (selectedStudent: any) => {
           group: item.group,
           nextPaymentDate: item.nextPaymentDate,
         };
+
        // Add payment transaction
+
+  
+        // Add payment transaction
+
         await addPaymentTransaction(transaction, data.student.id,user);
         // Update student payment info in Firestore
         const updatedStudents = await updateStudentPaymentInfo(item.id, data.student, item);
@@ -447,7 +469,7 @@ const onSelected = (selectedStudent: any) => {
                       ? {
                           ...cls,
                           nextPaymentDate: item.nextPaymentDate,
-                          debt: Math.abs(item.debt - item.amountPaid),
+                          debt: item.debt - item.amountPaid,
                           sessionsLeft: item.sessionsLeft,
                           sessionsToStudy:cls.numberOfSessions
                         }

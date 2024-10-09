@@ -211,4 +211,8 @@ function QrCodeIcon(props) {
   );
 }
 
+
+
+
 export default QrSeach;
+
