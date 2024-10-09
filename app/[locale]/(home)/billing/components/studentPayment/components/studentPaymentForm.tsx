@@ -353,7 +353,7 @@ const onSelected = (selectedStudent: any) => {
                       const classss = scannedStudent.classes
                         .map((clsUID) => {
                           const selectedClass = classes.find(
-                            (cls) => cls.id === clsUID.id && clsUID.sessionsLeft <= 0
+                             (cls) => cls.id === clsUID.id && (clsUID.sessionsLeft <= 0 || clsUID.debt > 0)
                           );
                           if (selectedClass) {
                             return {
