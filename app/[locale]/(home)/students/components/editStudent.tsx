@@ -1049,29 +1049,29 @@ std.id === student.id ? {
     const t=useTranslations()
 const onSubmit = async (data: Student) => {
 
- const result=compareClasses(data.classes,student.classes)
-  console.log("sdsdds",result);
+//  const result=compareClasses(data.classes,student.classes)
+//   console.log("sdsdds",result);
   
- await processStudentChanges(result,data)
-const StudentInfoToUpdate = {
-  monthlypayment: calculatedAmount,
-  name: data.name,
-  year: data.year,
-  birthdate: data.birthdate,
-  phoneNumber: data.phoneNumber,
-  field:data.field,
-  birthplace:data.birthplace,
-  school:data.school
-};
+//  await processStudentChanges(result,data)
+// const StudentInfoToUpdate = {
+//   monthlypayment: calculatedAmount,
+//   name: data.name,
+//   year: data.year,
+//   birthdate: data.birthdate,
+//   phoneNumber: data.phoneNumber,
+//   field:data.field,
+//   birthplace:data.birthplace,
+//   school:data.school
+// };
 
 if(student.photo != formData.photo){
   await updateStudentPicture(student.id,formData.photo,user)
 }
 // Update the teacher in Firestore
-await updateStudent(StudentInfoToUpdate,student.id,user);
-setStudents((prev: Student[]) => 
-prev.map(t => t.id === student.id ? { ...t, ...StudentInfoToUpdate } : t)
-);
+// await updateStudent(StudentInfoToUpdate,student.id,user);
+// setStudents((prev: Student[]) => 
+// prev.map(t => t.id === student.id ? { ...t, ...StudentInfoToUpdate } : t)
+// );
 nextStep()
 
 

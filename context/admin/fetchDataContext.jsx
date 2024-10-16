@@ -222,8 +222,8 @@ export const  FetchDataProvider = ({ children }) => {
             const student = {
               ...doc.data(),
               id: doc.id,
-              //nextPaymentDate:new Date(doc.data().nextPaymentDate.toDate()),
-              //birthdate: new Date(doc.data().birthdate.toDate()),
+              nextPaymentDate:new Date(),
+              birthdate: new Date(),
               student: `${doc.data().fullName}`,
               value: `${doc.data().fullName}`,
               label: `${doc.data().fullName}`,
