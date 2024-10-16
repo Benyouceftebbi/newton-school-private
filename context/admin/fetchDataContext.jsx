@@ -23,134 +23,134 @@ export const  FetchDataProvider = ({ children }) => {
   const [teachersSalary,setTeachersSalary]=useState([]);
   const [payouts,setPayouts]=useState([]);
   const [payoutsActionTrack,setPayoutsActionTrack] =useState([])
-  useEffect(()=>{
-    const getAnalytics=async()=>{
-      try {
-        const PayoutsSnapshot = await getDoc(doc(db, "Billing","analytics"));
-        const otherPayoutsSnapShot= await getDoc(doc(db, "Billing","payouts"));
+//   useEffect(()=>{
+//     const getAnalytics=async()=>{
+//       try {
+//         const PayoutsSnapshot = await getDoc(doc(db, "Billing","analytics"));
+//         const otherPayoutsSnapShot= await getDoc(doc(db, "Billing","payouts"));
       
-        const otherPayoutsData = otherPayoutsSnapShot.data();
-        setPayoutsActionTrack(otherPayoutsData.actionTrack || []);
+//         const otherPayoutsData = otherPayoutsSnapShot.data();
+//         setPayoutsActionTrack(otherPayoutsData.actionTrack || []);
      
        
      
-          //console.table(parentsData);
-        setAnalytics({...PayoutsSnapshot.data(),...otherPayoutsSnapShot.data()})
-      } catch (error) {
-        console.error('Error fetching Payouts:', error);
-      }
-    };
-    getAnalytics()
-  },[])
+//           //console.table(parentsData);
+//         setAnalytics({...PayoutsSnapshot.data(),...otherPayoutsSnapShot.data()})
+//       } catch (error) {
+//         console.error('Error fetching Payouts:', error);
+//       }
+//     };
+//     getAnalytics()
+//   },[])
 
-  useEffect(() => {
-    const getPayouts = async () => {
-      try {
-        const PayoutsSnapshot = await getDocs(
-          query(
-            collection(db, "Billing", "payouts", "Payout"),
-            where("paymentDate", ">=", date.from),
-            where("paymentDate", "<=", date.to)
-          )
-        );
+//   useEffect(() => {
+//     const getPayouts = async () => {
+//       try {
+//         const PayoutsSnapshot = await getDocs(
+//           query(
+//             collection(db, "Billing", "payouts", "Payout"),
+//             where("paymentDate", ">=", date.from),
+//             where("paymentDate", "<=", date.to)
+//           )
+//         );
   
-        const PayoutsData = PayoutsSnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-          paymentDate: new Date(doc.data().paymentDate.toDate()),
-          payment: doc.id,
-          value: doc.id,
-          label: doc.id
-        }));
+//         const PayoutsData = PayoutsSnapshot.docs.map((doc) => ({
+//           ...doc.data(),
+//           id: doc.id,
+//           paymentDate: new Date(doc.data().paymentDate.toDate()),
+//           payment: doc.id,
+//           value: doc.id,
+//           label: doc.id
+//         }));
   
-        setPayouts(PayoutsData);
-      } catch (error) {
-        console.error('Error fetching Payouts:', error);
-      }
-    };
+//         setPayouts(PayoutsData);
+//       } catch (error) {
+//         console.error('Error fetching Payouts:', error);
+//       }
+//     };
   
-    getPayouts();
-  }, [date]);
- useEffect(() => {
-    const getTeachersSalary = async () => {
-      try {
-        const teachersSalarySnapshot = await getDocs(
-          query(
-            collection(db, "Billing", "payouts", "TeachersTransactions"),
-            where("date", ">=", date.from),
-            where("date", "<=", date.to)
-          )
-        );
+//     getPayouts();
+//   }, [date]);
+//  useEffect(() => {
+//     const getTeachersSalary = async () => {
+//       try {
+//         const teachersSalarySnapshot = await getDocs(
+//           query(
+//             collection(db, "Billing", "payouts", "TeachersTransactions"),
+//             where("date", ">=", date.from),
+//             where("date", "<=", date.to)
+//           )
+//         );
   
-        const TeachersSalaryData = teachersSalarySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
+//         const TeachersSalaryData = teachersSalarySnapshot.docs.map((doc) => ({
+//           ...doc.data(),
+//           id: doc.id,
      
-          date: new Date(doc.data().date.toDate()),
-          value: doc.id,
-          label: doc.id,
-          teacherSalary: doc.id
-        }));
+//           date: new Date(doc.data().date.toDate()),
+//           value: doc.id,
+//           label: doc.id,
+//           teacherSalary: doc.id
+//         }));
   
-        setTeachersSalary(TeachersSalaryData);
-      } catch (error) {
-        console.error('Error fetching Teachers:', error);
-      }
-    };
+//         setTeachersSalary(TeachersSalaryData);
+//       } catch (error) {
+//         console.error('Error fetching Teachers:', error);
+//       }
+//     };
   
-    getTeachersSalary();
-  }, [date]);
-  useEffect(() => {
-    const getInvoices = async () => {
-      try {
+//     getTeachersSalary();
+//   }, [date]);
+//   useEffect(() => {
+//     const getInvoices = async () => {
+//       try {
         
-        const invoicesSnapshot = await getDocs(
-          query(collection(db, 'Billing', "payments", "Invoices"),
-          ));
+//         const invoicesSnapshot = await getDocs(
+//           query(collection(db, 'Billing', "payments", "Invoices"),
+//           ));
           
           
     
   
-          const invoicesData = invoicesSnapshot.docs.map((doc) => {
-            const invoiceData = doc.data();
-            return {
-              ...invoiceData,
-              lastPaymentDate: new Date(invoiceData.lastPaymentDate.toDate()), // Convert lastPaymentDate
-              transaction: Array.isArray(invoiceData.transaction) // Check if transaction exists and is an array
-                ? invoiceData.transaction
-                    .map((trans) => ({
-                      ...trans,
-                      paymentDate:new Date(trans.paymentDate.toDate()), // Handle missing paymentDate
-                      nextPaymentDate: trans.nextPaymentDate ? new Date(trans.nextPaymentDate.toDate()) : new Date, // Handle missing nextPaymentDate
-                    }))
-                    .filter(
-                      (trans) =>
-                        trans.paymentDate && // Ensure paymentDate exists
-                        trans.paymentDate >= date.from && 
-                        trans.paymentDate <= date.to
-                    )
-                : [], // If transaction doesn't exist, return an empty array
-            };
-          });
+//           const invoicesData = invoicesSnapshot.docs.map((doc) => {
+//             const invoiceData = doc.data();
+//             return {
+//               ...invoiceData,
+//               lastPaymentDate: new Date(invoiceData.lastPaymentDate.toDate()), // Convert lastPaymentDate
+//               transaction: Array.isArray(invoiceData.transaction) // Check if transaction exists and is an array
+//                 ? invoiceData.transaction
+//                     .map((trans) => ({
+//                       ...trans,
+//                       paymentDate:new Date(trans.paymentDate.toDate()), // Handle missing paymentDate
+//                       nextPaymentDate: trans.nextPaymentDate ? new Date(trans.nextPaymentDate.toDate()) : new Date, // Handle missing nextPaymentDate
+//                     }))
+//                     .filter(
+//                       (trans) =>
+//                         trans.paymentDate && // Ensure paymentDate exists
+//                         trans.paymentDate >= date.from && 
+//                         trans.paymentDate <= date.to
+//                     )
+//                 : [], // If transaction doesn't exist, return an empty array
+//             };
+//           });
           
   
-          //paymentDate:new Date(doc.data().paymentDate.toDate()),
-         /* id: doc.id,
-          value: doc.id,
-          label: doc.id,
-          invoice: doc.id,
-          paymentDate: new Date(doc.data().paymentDate.toDate())
-          */
+//           //paymentDate:new Date(doc.data().paymentDate.toDate()),
+//          /* id: doc.id,
+//           value: doc.id,
+//           label: doc.id,
+//           invoice: doc.id,
+//           paymentDate: new Date(doc.data().paymentDate.toDate())
+//           */
      
-  console.log('test invoicesData',invoicesData );
-        setInvoices(invoicesData);
-      } catch (error) {
-        console.error('Error fetching Invoices:', error);
-      }
-    };
+//   console.log('test invoicesData',invoicesData );
+//         setInvoices(invoicesData);
+//       } catch (error) {
+//         console.error('Error fetching Invoices:', error);
+//       }
+//     };
   
-    getInvoices();
-  }, [date]);
+//     getInvoices();
+//   }, [date]);
   useEffect(() => {
       const getClasses = async () => {
         try {
@@ -185,79 +185,53 @@ export const  FetchDataProvider = ({ children }) => {
             };
           });
   
-          const classesData = await Promise.all(groupsDataPromises);
+          const classesData =[];
   
-          // Process teachers data
-          const TeachersData = teachersSnapshot.docs.map((doc) => {
-          const teacher = { ...doc.data(),
-            id: doc.id,
-            birthdate: new Date(doc.data().birthdate.toDate()),
-            teacher: `${doc.data().name}`,
-            phoneNumber: doc.data().phoneNumber,
-            year: doc.data().year,
-            value:doc.id,
-            label:doc.data().name,
-            actionTrack: doc.data().actionTrack || []
+        //   // Process teachers data
+        //   const TeachersData = teachersSnapshot.docs.map((doc) => {
+        //   const teacher = { ...doc.data(),
+        //     id: doc.id,
+        //     birthdate: new Date(doc.data().birthdate.toDate()),
+        //     teacher: `${doc.data().name}`,
+        //     phoneNumber: doc.data().phoneNumber,
+        //     year: doc.data().year,
+        //     value:doc.id,
+        //     label:doc.data().name,
+        //     actionTrack: doc.data().actionTrack || []
 
-          }
-          const result = teacher.groupUIDs.flatMap(cls => {
-            const classDetail = classesData.find(clss => clss.id === cls);
+        //   }
+        //   const result = teacher.groupUIDs.flatMap(cls => {
+        //     const classDetail = classesData.find(clss => clss.id === cls);
             
-              if(classDetail){
+        //       if(classDetail){
        
                 
-                const { Attendance, ...rest } = classDetail;
-                return rest;
-              }
+        //         const { Attendance, ...rest } = classDetail;
+        //         return rest;
+        //       }
          
-                    });
-          return {
-            ...teacher,
-            classes: result
-          };
-        });
+        //             });
+        //   return {
+        //     ...teacher,
+        //     classes: result
+        //   };
+        // });
   
           // Process students data
           const StudentsData = studentsSnapshot.docs.map((doc) => {
             const student = {
               ...doc.data(),
               id: doc.id,
-              nextPaymentDate:new Date(doc.data().nextPaymentDate.toDate()),
-              birthdate: new Date(doc.data().birthdate.toDate()),
-              student: `${doc.data().name}`,
-              value: `${doc.data().name}`,
-              label: `${doc.data().name}`,
+              //nextPaymentDate:new Date(doc.data().nextPaymentDate.toDate()),
+              //birthdate: new Date(doc.data().birthdate.toDate()),
+              student: `${doc.data().fullName}`,
+              value: `${doc.data().fullName}`,
+              label: `${doc.data().fullName}`,
               actionTrack: doc.data().actionTrack || []
             };
   
             // Calculate the result for each student
-            const result = student.classesUIDs.flatMap(cls => {
-              const classDetail = classesData.find(clss => clss.id === cls.id);
-              if (!classDetail) return [];
-  
-              const studentDetail = classDetail.students.find(std => std.id === student.id);
-              if (!studentDetail) return [];
-  
-              const groupDetail = classDetail.groups
-              if (!groupDetail) return [];
-  
-              return {
-                cs: studentDetail.cs,
-                groups:groupDetail,
-                group: classDetail.group,
-                id: cls.id,
-                index: studentDetail.index,
-                name: classDetail.teacherName,
-                subject: classDetail.subject,
-                sessionsLeft:studentDetail.sessionsLeft,
-                amount:studentDetail.amount,
-                debt:studentDetail.debt,
-                nextPaymentDate:studentDetail.nextPaymentDate?new Date(studentDetail.nextPaymentDate.toDate()) : null,
-                sessionsToStudy:studentDetail.sessionsToStudy,
-                addedAt:studentDetail.addedAt|| student.lastPaymentDate
-              };
-            });
-  
+            const result = []
             return {
               ...student,
               classes: result
@@ -266,7 +240,7 @@ export const  FetchDataProvider = ({ children }) => {
   
           // Set state
           setStudents(StudentsData);
-          setTeachers(TeachersData);
+          //setTeachers(TeachersData);
           setClasses(classesData);
           console.log("donnnee");
           

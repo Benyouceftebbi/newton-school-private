@@ -166,83 +166,175 @@ interface DataTableDemoProps {
       setOpenCardSheetAT(true); // Open the sheet after setting the level
     };
     
-
-
+    const getMonthAbbreviation = (monthIndex: number) => {
+      const startDate = new Date(2024, 8); // September 2023 (month index 8)
+      const date = new Date(startDate.getFullYear(), startDate.getMonth() + monthIndex);
+      const monthAbbreviation = date.toLocaleString('en-GB', { month: "short" });
+      const yearAbbreviation = date.getFullYear().toString().substr(-2);
+      return `${monthAbbreviation}${yearAbbreviation}`;
+    };
+    const generateMonthlyPaymentColumns = (
+      getMonthAbbreviation: (index: number) => string
+    ): ColumnDef<any>[] => {
+      return Array.from({ length: 11 }, (_, i) => {
+        const monthAbbreviation = getMonthAbbreviation(i);
+        return {
+          accessorKey: `monthlyPayments.${monthAbbreviation}`,
+          header: () => <div>{monthAbbreviation}</div>,
+          cell: ({ row }: { row: any }) => {
+            const isPaid = parseFloat('0' )
+         
+            // row.original.monthly_payments[monthAbbreviation]?.paymentAmount
+            // Format the amount as a dollar amount
+            const formatted = new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "DZD",
+            }).format(isPaid)
+            
+            return (
+              <div className=" font-medium">{formatted}</div>
+            );
+          },
+        };
+      });
+    };
    const {toast}=useToast()
    const [openAlert,setOpenAlert]=React.useState(false)
     const columns: ColumnDef<any>[] = [
-    //   {
-    //     accessorKey: "index",
-    //     header: () => <div >Index</div>,
-     
-    //     cell: ({ row,table}) => {
-    //      (table.getSortedRowModel()?.flatRows?.findIndex((flatRow) => flatRow.id === row.id) || 0) + 1
-    //    return (
-    //     <div className="capitalize" style={{ width: '10px' }}>
-    //     <div className="font-medium">{row.original.studentIndex}</div>
-    //  </div>
-    //    )
-
-      
-    //      }
-    //   },
       {
-        accessorKey: "name",
+        accessorKey: "student",
         header: () => <div >{t('name')}</div>,
   
         cell: ({ row }) => (
           <div className="capitalize">
-             <div className="font-medium">{row.getValue("name")}</div>
+             <div className="font-medium">{row.getValue("student")}</div>
           </div>
         ),
       },
       {
-        accessorKey: "year",
-        header: () => <div style={{ whiteSpace: 'pre-wrap' }}>{t('year')}</div>,
-        cell: ({ row }) => <div>{row.getValue("year")}</div>,
+        accessorKey: "level",
+        header: () => <div style={{ whiteSpace: 'pre-wrap' }}>{t('level')}</div>,
+        cell: ({ row }) => <div>{row.original.level}</div>,
       },
+      ...generateMonthlyPaymentColumns(getMonthAbbreviation),
       {
-        accessorKey: "field",
-        header: () => <div >{t('field')}</div>,
-        cell: ({ row }) => <div>{row.getValue("field")}</div>,
-      },
-      {
-        accessorKey: "phone",
-        header: () => <div >{t('Phone')}</div>,
-        cell: ({ row }) => <div>{row.original.phoneNumber}</div>,
-      },
-      {
-        accessorKey: "school",
-        header: () => <div >{t('school')}</div>,
-        cell: ({ row }) => <div>{row.getValue("school")}</div>,
-      },
-      {
-        id: "classes",
-        header: () => <div>{t('Classes')}</div>,
+        accessorKey: "amountLeftToPay",
+        header:() => <div style={{ whiteSpace: 'pre-wrap', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t('amount-left-to-pay-0')}</div>, 
+  
         cell: ({ row }) => {
-          const classesuid = row.original.classes;
-
+          const amount = parseFloat(row.getValue("amountLeftToPay"))
+    
+          // Format the amount as a dollar amount
+          const formatted = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "DZD",
+          }).format(amount)
+    
+          return <div className=" font-medium">{formatted}</div>
+        },
+      },
+      {
+        accessorKey: `registrationAndInsuranceFee`,
+        header: () =>  <div style={{ whiteSpace: 'pre-wrap', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {t('registrationAndInsuranceFee')}
+      </div>,
+        cell: ({ row }: { row: any }) => {
+          const amount = parseFloat(row.getValue("registrationAndInsuranceFee"))
+    
+          // Format the amount as a dollar amount
+          const formatted = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "DZD",
+          }).format(amount)
+   
           
           return (
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              {classesuid.map((classItem: any, index: number) => (
-                <div key={index} style={{ maxWidth: '200px', marginBottom: '5px' }}>
-                  <div className="font-medium">{classItem.subject}</div>
-                  <div className="text-sm ">
-                    {classItem.name},      {classItem.groups.map((cls)=>(
-     <div className="text-sm text-muted-foreground">
-     <div>{t(`${cls.day}`)}</div>
-     <div>{`${cls.start} -> ${cls.end}`}</div>
-   </div>
-      ))}
-                  </div>
-                  <div className="text-sm ">
-                    N: {classItem.index},group: {classItem.group}
-                  </div>
-                </div>
-              ))}
-              
+            <Badge
+              style={{ backgroundColor:"#4CAF50" }}
+            >
+     {formatted}
+          
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: `feedingFee`,
+        header: () => <div style={{ whiteSpace: 'pre-wrap' }}>{t('feedingFee')}</div>,
+        cell: ({ row }: { row: any }) => {
+          const amount = parseFloat(row.getValue("feedingFee"))
+    
+          // Format the amount as a dollar amount
+          const formatted = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "DZD",
+          }).format(amount)
+   
+          
+          return (
+            <Badge
+              style={{ backgroundColor:"#4CAF50" }}
+            >
+     {formatted}
+          
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: "discount",
+        header:() => <div style={{ whiteSpace: 'pre-wrap', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis' }}>Promotion</div>, 
+  
+        cell: ({ row }) => {
+          const amount = 5000
+    
+          // Format the amount as a dollar amount
+          const formatted = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "DZD",
+          }).format(amount)
+    
+          return <div className=" font-medium">{formatted}</div>
+        },
+      },
+   
+      {
+        accessorKey: 'debt',
+        header: () => <div style={{ whiteSpace: 'pre-wrap', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis' }}>pay debt</div>,
+        cell: ({ row }) => {
+          const [amountToDeduct, setAmountToDeduct] = React.useState('');
+    
+          const handleDeduct = () => {
+            const newDebt = row.original.debt - parseFloat(amountToDeduct);
+    
+          };
+    
+
+    
+          return (
+            <div>
+              <input
+                type="number"
+                value={amountToDeduct}
+                onChange={(e) => setAmountToDeduct(e.target.value)}
+                placeholder="Enter amount"
+                style={{ marginTop: '8px', marginRight: '8px' }}
+              />
+              <Button onClick={handleDeduct} style={{ marginTop: '8px' }}>
+                Deduct
+              </Button>
             </div>
+          );
+        },
+      },
+      {
+        id: "addPayment",
+        enableHiding: false,
+        cell: ({ row }) => {
+          const student = row.original;
+    
+          return (
+          <StudentPaymentSheet student={student}/>
           );
         },
       },

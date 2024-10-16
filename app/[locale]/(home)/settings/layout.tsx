@@ -17,6 +17,10 @@ const sidebarNavItems = [
     title: "Action History",
     href: "/settings/history",
   },
+  {
+    title: "Level",
+    href: "/settings/level",
+  },
 ]
 
 interface SettingsLayoutProps {

@@ -7,15 +7,14 @@ import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCqgP7Ux8aE3gBPYodlmdEa6ySdhyUZnE8",
-  authDomain: "test-swi3a.firebaseapp.com",
-  projectId: "test-swi3a",
-  storageBucket: "test-swi3a.appspot.com",
-  messagingSenderId: "962261822843",
-  appId: "1:962261822843:web:da61beeed8a9a41ce961de",
-  measurementId: "G-K2EX9SF3ZM"
+  apiKey: "AIzaSyDI7u9LrHEyvwf1ZsbzY4EMjMDluW-3rTU",
+  authDomain: "newton-sch.firebaseapp.com",
+  projectId: "newton-sch",
+  storageBucket: "newton-sch.appspot.com",
+  messagingSenderId: "633312336525",
+  appId: "1:633312336525:web:7398401c5973380203e0c4",
+  measurementId: "G-E8T47WQP29"
 };
-
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

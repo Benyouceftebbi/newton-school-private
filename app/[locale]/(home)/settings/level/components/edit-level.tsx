@@ -107,8 +107,6 @@ const EditFormSheetDemo: React.FC<SheetDemoProps> = ({ level,setOpen,open }) => 
 //reset useform default values on each new level
   React.useEffect(() => {
     reset(level)
-    console.log("reset",level);
-    
  }, [level,reset])
 
   const { fields:subjects, append:appendSubject,remove:removeSubject} = useFieldArray({

@@ -61,9 +61,6 @@ export default function Header() {
         >
           {t('Students')}
         </Link>
-
-        {/* Conditionally render the Teachers and Settings links if the role is not null */}
-        {console.log('Role:', user.role)}
 {user.role === null && (
   <Link
     href="/teachers"
@@ -76,6 +73,14 @@ export default function Header() {
     {t('teachers-0')}
   </Link>
 )}
+        <Link
+          href="/classes"
+          className={`${
+            pathname === '/classes' ? 'text-black-500 dark:text-white' : 'text-muted-foreground hover:text-foreground transition-colors'
+          }`}
+        >
+          {t('Classes')}
+        </Link>
             <Link
           href="/billing"
           className={`${pathname=== '/billing' ?'text-black-500 dark:text-white ' : 'text-muted-foreground hover:text-foreground foreground transition-colors'}`}
@@ -95,8 +100,6 @@ export default function Header() {
        
         )}
       </nav>
-
-      {/* Sheet menu for mobile */}
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -162,6 +165,14 @@ export default function Header() {
                 </Link>
               </>
             )}
+                <Link
+          href="/classes"
+          className={`${
+            pathname === '/classes' ? 'text-black-500 dark:text-white' : 'text-muted-foreground hover:text-foreground transition-colors'
+          }`}
+        >
+          {t('classes')}
+        </Link>
           </nav>
         </SheetContent>
       </Sheet>
