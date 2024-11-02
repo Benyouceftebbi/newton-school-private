@@ -72,6 +72,12 @@ import {
 import VerifyStudent from "./VerifyStudent"
 import QrSeach from "./Qr-search"
 import { StudentsNumber } from "./area-chart"
+import { Level } from "../../settings/level/components/levels-table"
+import { doc, updateDoc } from "firebase/firestore"
+import { db } from "@/firebase/firebase-config"
+import * as XLSX from 'xlsx';
+
+
 type Status = 'accepted' | 'pending' | 'rejected';
 export type StudentSummary = {
   id: string;
@@ -91,7 +97,7 @@ interface DataTableDemoProps {
     const [openCardSheetAT,setOpenCardSheetAT]=React.useState(false)
     const [openCard,setOpenCard]=React.useState(false)
     const t=useTranslations()
-    const {students,setStudents,classes}=useData()
+    const {students,setStudents,classes,levels}=useData()
 
     
     const orderedStudents = React.useMemo(() => {
@@ -176,23 +182,27 @@ interface DataTableDemoProps {
     const generateMonthlyPaymentColumns = (
       getMonthAbbreviation: (index: number) => string
     ): ColumnDef<any>[] => {
-      return Array.from({ length: 11 }, (_, i) => {
+      return Array.from({ length: 10 }, (_, i) => {
         const monthAbbreviation = getMonthAbbreviation(i);
         return {
           accessorKey: `monthlyPayments.${monthAbbreviation}`,
           header: () => <div>{monthAbbreviation}</div>,
           cell: ({ row }: { row: any }) => {
-            const isPaid = parseFloat('0' )
-         
-            // row.original.monthly_payments[monthAbbreviation]?.paymentAmount
-            // Format the amount as a dollar amount
-            const formatted = new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "DZD",
-            }).format(isPaid)
+            // Find the payment object for this month
+            const payment = row.original.monthlyPayments.find(
+              (p: any) => p.month === monthAbbreviation
+            );
+            
+            // Get the status or default to "notPaid"
+            const status = payment?.status;
             
             return (
-              <div className=" font-medium">{formatted}</div>
+              <Badge
+              style={{ backgroundColor: status === 'paid' ? "#4CAF50" : "#F44336" }}
+            >
+     {status === 'paid' && t('paid')}
+          
+            </Badge>
             );
           },
         };
@@ -374,11 +384,11 @@ interface DataTableDemoProps {
 
     
 const orderedMonths = [
-  'Sept23', 'Oct23', 'Nov23', 'Dec23',
-  'Jan24', 'Feb24', 'Mar24', 'Apr24',
-  'May24', 'Jun24', 'Jul24','Aug24'
-];
-    const exceldata=students.map((student:any)=>({[`${t('Name')}`]:student.student,
+  'Sept24', 'Oct24', 'Nov24', 'Dec24',
+  'Jan25', 'Feb25', 'Mar25', 'Apr25',
+  'May25', 'Jun25'
+]
+const exceldata=students.map((student:any)=>({[`${t('Name')}`]:student.student,
     [`${t('level')}`]:student.level,
     [`${t('class')}`]:student.class,
     [`${t('status')}`]:t(student.status),
@@ -453,6 +463,101 @@ const orderedMonths = [
     return counts;
   }, [orderedStudents]);
   const studentCounts = countStudentsByStream(students, subjects);
+  const assignLevelIdsToStudents = (students: Student[], levels: Level[]) => {
+  const monthsOrder = [
+    'Sept24', 'Oct24', 'Nov24', 'Dec24',
+    'Jan25', 'Feb25', 'Mar25', 'Apr25',
+    'May25', 'Jun25'
+  ];
+  const updatedStudents = students.map(async student => {
+    const matchingLevel = levels.find(level => level.level === student.level);
+    const monthlyFee = matchingLevel?.fee ? matchingLevel.fee / 10 : 0;
+    const updatedMonthlyPayments = [];
+
+    monthsOrder.forEach((month, index) => {
+      updatedMonthlyPayments.push({
+        status:"notPaid",
+        month:month,
+      });
+    });
+
+    await updateDoc(doc(db,"Students",student.id), {
+      levelId: matchingLevel?.id,
+      totalAmount: matchingLevel?.fee,
+      monthlyPayments: updatedMonthlyPayments
+    });
+      return {
+        ...student,
+        levelId: matchingLevel ? matchingLevel.id : null,
+        totalAmount:matchingLevel?.fee
+      };
+    });
+    return updatedStudents
+  };
+  const processExcelFile = async () => {
+    try {
+      const response = await fetch('/eleve (7).xlsx');
+      const arrayBuffer = await response.arrayBuffer();
+      
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      
+      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      
+      // Process each row (skipping header)
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        
+        const lastName = row[1];
+        const firstName = row[2];
+        const monthsPaid = parseFloat(row[row.length - 1]); // Amount is now months paid (0-10)
+        
+        const fullName = `${firstName} ${lastName}`;
+        
+        // Find matching student
+        const student = students.find(s => s.fullName === fullName);
+        
+        if (student && student.levelId) {
+          // Find matching level
+          const level = levels.find(l => l.id === student.levelId);
+          
+          if (level?.fee) {
+            // Calculate monthly fee and total amount to reduce
+            const monthlyFee = level.fee / 10; // Divide annual fee by 10 months
+            const amountToReduce = monthlyFee * monthsPaid;
+            const newTotalAmount = student.totalAmount - amountToReduce;
+            const updatedMonthlyPayments = student.monthlyPayments.map((payment, index) => {
+              if (index < monthsPaid) {
+                return { ...payment, status: 'paid' };
+              }
+              return payment;
+            });
+            
+            // Update student document in Firestore
+            await updateDoc(doc(db, "Students", student.id), {
+              totalAmount: newTotalAmount,
+              amountLeftToPay: newTotalAmount,
+              monthlyPayments: updatedMonthlyPayments
+            });
+            
+            console.log(`Updated ${fullName}: Reduced ${amountToReduce} DZD for ${monthsPaid} months`);
+          }
+        }
+      }
+      
+      toast({
+        title: "Success",
+        description: "Student payments updated from Excel file",
+      });
+    } catch (error) {
+      console.error('Error processing Excel file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process Excel file",
+        variant: "destructive",
+      });
+    }
+  };
   return (
     <>
 
@@ -471,14 +576,14 @@ const orderedMonths = [
   
       <Input
           placeholder={t('filter-student')}
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("student")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("student")?.setFilterValue(event.target.value)
           }
           className="max-w-sm font-medium"
         />
               <QrSeach onStudentScanned={(name) => {
-        table.getColumn("name")?.setFilterValue(name);
+        table.getColumn("student")?.setFilterValue(name);
       }} />
           <div className=" ml-auto space-y-4 ">
             <StudentForm filter={filter}/>
