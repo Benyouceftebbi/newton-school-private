@@ -564,21 +564,8 @@ if(["تمهيدي"].includes(e)) {
  {!watch('photo') ? (
         <div className="w-[300px] items-center justify-center flex flex-col">
           
-          <Camera ref={camera} aspectRatio={16/9} errorMessages={{noCameraAccessible:"no Cemera"}}  facingMode='environment' />
+          
           <div className="flex gap-2">
-            <Button
-              onClick={() => {
-                if (camera.current) {
-                  setValue('photo', camera.current.takePhoto())
-                } else {
-                  console.error('Camera reference is null')
-                }
-              }}
-              variant="secondary"
-              type='button'
-            >
-              {t('Take photo')}
-            </Button>
             <Button
               onClick={() => fileInputRef.current.click()}
               variant="secondary"
@@ -600,9 +587,6 @@ if(["تمهيدي"].includes(e)) {
         <>
         <img src={watch('photo')} alt="Captured photo" className='w-[300px] h-auto object-cover rounded-lg' />
         <div className="flex gap-2">
-          <Button onClick={() => setValue('photo', null)} variant="secondary" type='button'>
-            {t('Retake photo')}
-          </Button>
           <Button
             onClick={() => fileInputRef.current.click()}
             variant="secondary"
@@ -1043,8 +1027,7 @@ std.id === student.id ? {
       }
     }
     }
-  
- 
+
     const {toast}=useToast()
     const t=useTranslations()
 const onSubmit = async (data: Student) => {
